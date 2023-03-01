@@ -66,7 +66,7 @@ If you use this programm in your worl, please use the following BibTeX entry.
 @misc{ALWIC_tool_2023,
   author =       {Baptiste Bordet, Hans-Christian Steen Larsen, Daniele Zannoni, Arny Sveinbjörnsdottir},
   title =        {{Automatic liquid water isotope calibration tool (ALWIC-tool)}},
-  howpublished = {\url{link_git_hub}},
+  howpublished = {\url{https://github.com/baptistebordet1/ALWIC-tool}},
   year =         {2023}
 }
 ```
