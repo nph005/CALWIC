@@ -7,7 +7,7 @@ The idea behind this code is to make it accessible for everyone, from the underg
 # Getting started
 ## Download ALWIC-tool
 In order to download ALWIC you can click [here](https://github.com/baptistebordet1/ALWIC-tool/archive/refs/heads/main.zip). This will download a zip file with all the modules. 
-If you are familiar with github you can clone the project with the following link : link_git_clone_here. 
+If you are familiar with github you can clone the project with the following link : https://github.com/baptistebordet1/ALWIC-tool. 
 
 ## Install ALWIC-tool
 ### Using annaconda 
