@@ -1,5 +1,5 @@
 # Automatic liquid water isotope calibration tool : ALWIC-tool
-![alt text](link_image_here)
+![alt text](https://github.com/baptistebordet1/ALWIC-tool/blob/main/image_read_me.jpg)
 A python workflow integrated with a user interface to process liquid injections of water stable istopes. Usually the processing i.e. memory correction and calibration is done by hand with a non-negligeable probability of human mistakes. We try to adress this issue with a limited number of inputs made by hand. This tool provide also a large number of graphs to improve the visualisation of the dataset at each step of the processing. 
 
 The idea behind this code is to make it accessible for everyone, from the undergraduate student to the recognized scientist including the high-level programmer. It can used "as is" but can also be customized to the infinite due to it's architecture in module. 
