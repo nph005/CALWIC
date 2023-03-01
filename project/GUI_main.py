@@ -1165,7 +1165,7 @@ entry_11_2.grid(row=2, column=2)
 # menu bar help
 
 def open_github():
-    url = "https://github.com/thilowrona/fatbox/blob/master/README.md"
+    url = "https://github.com/baptistebordet1/ALWIC-tool/blob/main/README.md"
     webbrowser.open_new(url)
     return
 
