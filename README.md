@@ -1,15 +1,15 @@
-# Automatic liquid water isotope calibration tool : ALWIC tool
+# Automatic liquid water isotope calibration tool : ALWIC-tool
 ![alt text](link_image_here)
 A python workflow integrated with a user interface to process liquid injections of water stable istopes. Usually the processing i.e. memory correction and calibration is done by hand with a non-negligeable probability of human mistakes. We try to adress this issue with a limited number of inputs made by hand. This tool provide also a large number of graphs to improve the visualisation of the dataset at each step of the processing. 
 
 The idea behind this code is to make it accessible for everyone, from the undergraduate student to the recognized scientist including the high-level programmer. It can used "as is" but can also be customized to the infinite due to it's architecture in module. 
 
 # Getting started
-## Download ALWIC
+## Download ALWIC-tool
 In order to download ALWIC you can click [here](https://github.com/baptistebordet1/ALWIC-tool/archive/refs/heads/main.zip). This will download a zip file with all the modules. 
 If you are familiar with github you can clone the project with the following link : link_git_clone_here. 
 
-## Install ALWIC
+## Install ALWIC-tool
 ### Using annaconda 
 
 The first recommendation is to create a new environment to avoid any conflicts of the installed packages with your previous configuration. In Anaconda a new environment is created in the Annaconda prompt with the following command : 
