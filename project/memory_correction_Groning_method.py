@@ -144,11 +144,11 @@ def wrapper_memory_correction_groning_method(iso_type_list,result_file_df,len_st
     last_injections=create_last_injections(result_file_df, iso_type_list)
     iso_length=len(iso_type_list)
     single_factor_mean=calculate_single_factor(first_injections, last_injections, iso_length)
-    groning_params=[[],[],[]]
+    #groning_params=[[],[],[]]
     #TODO make this function work 
-    for i,iso_type in enumerate(iso_type_list):
-        result=exponential_optimisation( result_file_df,first_injections,last_injections,iso_type,inj_per_std,iso_length,i)  
-        groning_params[i].append(result)
+    #for i,iso_type in enumerate(iso_type_list):
+    #   result=exponential_optimisation( result_file_df,first_injections,last_injections,iso_type,inj_per_std,iso_length,i)  
+    #   groning_params[i].append(result)
     for i,iso_type in enumerate(iso_type_list):
         first_corrected_file_df=single_factor_memory_correction(single_factor_mean, iso_type, result_file_df, i)
         corrected_file_df=exp_memory_correction(groning_params, last_injections, first_corrected_file_df, iso_type, inj_per_std,i)
@@ -159,8 +159,9 @@ def wrapper_memory_correction_groning_method(iso_type_list,result_file_df,len_st
 def wrapper_memory_correction_groning_method_d17O(iso_type_list,result_file_df,len_std_injections,groning_params, inj_per_std):
     first_injections=create_first_injections_values(result_file_df, iso_type_list)
     last_injections=create_last_injections(result_file_df, iso_type_list)
+     iso_length=len(iso_type_list)
+    single_factor_mean=calculate_single_factor(first_injections, last_injections, iso_length)
     for i,iso_type in enumerate(iso_type_list):
-        single_factor_mean=calculate_single_factor(first_injections, last_injections, i)
         first_corrected_file_df=single_factor_memory_correction(single_factor_mean, iso_type, result_file_df, i)
         corrected_file_df=exp_memory_correction(groning_params,last_injections, first_corrected_file_df, iso_type, inj_per_std,i)
     exp_params=groning_params
