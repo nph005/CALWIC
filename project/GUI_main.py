@@ -1200,13 +1200,13 @@ def close_window():
         files = os.listdir("./files/raw_files_temp/")
         if files != []:
             if "temp.txt" in files:
-            os.remove("./files/raw_files_temp/temp.txt")
+                os.remove("./files/raw_files_temp/temp.txt")
             for file in files:
                 os.remove("./files/raw_files_temp/"+file)
         files = os.listdir("./files/saving_temp/")
         if files != []:
             if "temp.txt" in files:
-            os.remove("./files/saving_temp/temp.txt")
+                os.remove("./files/saving_temp/temp.txt")
             for file in files:
                 os.remove("./files/saving_temp/"+file)
         m.destroy()
