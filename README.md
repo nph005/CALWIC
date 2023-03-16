@@ -24,11 +24,12 @@ Then the environment is activated with the command :
   activate your_environment_name
 ```
 
-To install necessary packages for the programm open a prompt window and navigate into the directory where you downloaded the programm. Then run the following command :
+To install necessary packages for ALWIC-tool open a prompt window and navigate into the directory where you downloaded ALWIC-tool. Then run the following command :
 
 ```
   conda env update -n your_environment_name -f requirements.yaml
 ```
+Note : This command might take a few minutes to run since all the packages required for AlWIC-tool will be downloaded and installed. 
 
 After this you can open the file called GUI\_main.py in Spyder and run it. The [documentation](link_to_doc) contains more information on how to run ALWIC.
 
