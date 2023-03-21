@@ -10,35 +10,39 @@ In order to download ALWIC you can click [here](https://github.com/baptisteborde
 If you are familiar with github you can clone the project with the following link : https://github.com/baptistebordet1/ALWIC-tool. 
 
 ## Install ALWIC-tool
-### Using annaconda 
+### Using Anaconda 
 
-The first recommendation is to create a new environment to avoid any conflicts of the installed packages with your previous configuration. In Anaconda a new environment is created in the Annaconda prompt with the following command : 
-
-```
- conda create -n your_environment_name
-```
-   
-Then the environment is activated with the command :
+The first recommendation is to create a new environment to avoid any conflicts of the installed packages with your previous configuration.
+Open an Anaconda prompt. Use the following command to go to the unzipped folder of ALWIC-tool : 
 
 ```
-  activate your_environment_name
+cd path_to_the_folder
 ```
 
-To install necessary packages for ALWIC-tool open a prompt window and navigate into the directory where you downloaded ALWIC-tool. Then run the following command :
+To create the new environment use the command below : 
 
 ```
-  conda env update -n your_environment_name -f requirements.yaml
+ conda env create -f requirements.yml
 ```
+
 Note : This command might take a few minutes to run since all the packages required for AlWIC-tool will be downloaded and installed. 
 
-After this you can open the file called GUI\_main.py in Spyder and run it. The [documentation](link_to_doc) contains more information on how to run ALWIC.
+This will create an environment called ALWIC_env which can be activated with the command :
+
+```
+ conda activate ALWIC_env
+```
+
+The environment has to be activated each time you want to run ALWIC-tool. It can also be done in Anaconda Navigator by choosing it instead of base on top left of the window. After this you can open the file called GUI\_main.py in Spyder and run it. The [documentation](link_to_doc) contains more information on how to run ALWIC.
 
 ### With another Python distribution
 
 You will need to install the packages included in the requirements.txt file. This file is included in the file you downloaded. The method to install it is yours, depending on your IDE but the command to install all the required packages is :
+
 ```
 pip install requirements.txt
 ```
+
 Then you can run the GUI\_main.py file and start processing. The [documentation](link_to_doc) contains more information on how to use ALWIC.
 
 ## Licence 
