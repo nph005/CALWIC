@@ -1011,7 +1011,7 @@ def proceeding():
 # definition of root window
 
 m = tk.Tk()
-m.title("Picarro analyser treatment programm")
+m.title("ALWIC-tool")
 m.state('zoomed')
 m.configure(bg="#BEE7E8")
 
@@ -1097,7 +1097,7 @@ label_4_2.grid(row=2, column=1)
 
 # Head of window
 
-message_text_1_1 = tk.Message(text="Welcome to the Picarro treatment code !",
+message_text_1_1 = tk.Message(text="Welcome to ALWIC-tool !",
                               font=("Helvetica Neue", 18),  width=500,
                               bg="#D11F00", fg="white", relief="ridge", bd=3)
 
