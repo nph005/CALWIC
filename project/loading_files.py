@@ -34,7 +34,7 @@ def load_standard_csv_file():
         List of the names of standards 
 
     """
-    std_values_file=pd.read_csv("./files/std_values.csv",sep=";")
+    std_values_file=pd.read_csv("./files/std_values.csv",sep=",")
     std_short_names_list=std_values_file["SHORT NAME"].tolist()
     return std_values_file,std_short_names_list
 
