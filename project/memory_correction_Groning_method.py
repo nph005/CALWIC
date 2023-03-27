@@ -82,9 +82,9 @@ def single_factor_memory_correction(single_factor_mean,iso_type, result_file_df,
 
 def exp_memory_correction(groning_params,last_injections,result_file_df,iso_type,inj_per_std,iso_number):
     k=iso_number
-    alpha=groning_params[k][0]
-    beta=groning_params[k][1]
-    balance=groning_params[k][2]
+    alpha=groning_params[0][k]
+    beta=groning_params[1][k]
+    balance=groning_params[2][k]
     j=0
     for i in range(inj_per_std,len(result_file_df)):
         inj_nbr=result_file_df["Inj Nr"].iloc[i]
@@ -95,60 +95,13 @@ def exp_memory_correction(groning_params,last_injections,result_file_df,iso_type
         result_file_df["MC_corr"+iso_type].iloc[i]=result_file_df["MC_corr"+iso_type].iloc[i]-corr*((last_injections[k][j-1]-last_injections[k][j])/100)
     return result_file_df
 
-# Function to perform exponential memory correction when adjusting parameters
-
-def exp_memory_correction_minimize(groning_params,last_injections,result_file_df,iso_type,inj_per_std,iso_number):
-    k=iso_number
-    alpha=groning_params[0]
-    beta=groning_params[1]
-    balance=groning_params[2]
-    j=0
-    for i in range(inj_per_std,len(result_file_df)):
-        inj_nbr=result_file_df["Inj Nr"].iloc[i]
-        if result_file_df["Inj Nr"].iloc[i]<result_file_df["Inj Nr"].iloc[i-1]:
-            j=j+1      
-        corr1=((result_file_df["MC_corr"+iso_type].iloc[i]-last_injections[k][j])/(last_injections[k][j-1]-last_injections[k][j]))*100
-        corr=corr1*(balance*np.exp(-alpha*(inj_nbr-1)) + (1-balance)*(np.exp(-beta*(inj_nbr-1))))
-        result_file_df["MC_corr"+iso_type].iloc[i]=result_file_df["MC_corr"+iso_type].iloc[i]-corr*((last_injections[k][j-1]-last_injections[k][j])/100)
-    return result_file_df
-
-
-
-# Function to minimize, b is balance term a and c are terms in each exponetial term
- 
-def function_to_minimize_exp(parameters,result_file_df,first_injections,last_injections,iso_type,inj_per_std,iso_length,iso_number):
-    X=result_file_df
-    single_factor_mean=calculate_single_factor(first_injections, last_injections, iso_length)
-    X=single_factor_memory_correction(single_factor_mean,iso_type, result_file_df,iso_number)
-    X=exp_memory_correction_minimize(parameters,last_injections,result_file_df,iso_type,inj_per_std,iso_number)
-    cost_function=0
-    j=0
-    k=iso_number
-    for i in range(inj_per_std,len(result_file_df)):
-        if result_file_df["Inj Nr"].iloc[i]<result_file_df["Inj Nr"].iloc[i-1]:
-            j=j+1
-        cost_function=cost_function+np.abs(X["MC_corr"+iso_type].iloc[i]-last_injections[k][j])
-    return cost_function
-
-def exponential_optimisation(result_file_df,first_injections,last_injections,iso_type,inj_per_std,iso_length,iso_number):
-    initial_guess=np.array([1.1,0.2,0.76])
-    bounds=Bounds([-np.inf,-np.inf,0],[np.inf,np.inf,1])
-    arguments=(result_file_df,first_injections,last_injections,iso_type,inj_per_std,iso_length,iso_number)
-    res=minimize(fun=function_to_minimize_exp,x0=initial_guess,method="nelder-mead",args=arguments,bounds=bounds,options={"disp":True,"maxiter":100})
-    return res.x 
-
-# Function to wrap Gröning method 
+# Function to wrap Gröning exponential method 
 
 def wrapper_memory_correction_groning_method(iso_type_list,result_file_df,len_std_injections,groning_params, inj_per_std):
     first_injections=create_first_injections_values(result_file_df, iso_type_list)
     last_injections=create_last_injections(result_file_df, iso_type_list)
     iso_length=len(iso_type_list)
     single_factor_mean=calculate_single_factor(first_injections, last_injections, iso_length)
-    #groning_params=[[],[],[]]
-    #TODO make this function work 
-    #for i,iso_type in enumerate(iso_type_list):
-    #   result=exponential_optimisation( result_file_df,first_injections,last_injections,iso_type,inj_per_std,iso_length,i)  
-    #   groning_params[i].append(result)
     for i,iso_type in enumerate(iso_type_list):
         first_corrected_file_df=single_factor_memory_correction(single_factor_mean, iso_type, result_file_df, i)
         corrected_file_df=exp_memory_correction(groning_params, last_injections, first_corrected_file_df, iso_type, inj_per_std,i)
