@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License along with ALW
 
 import numpy as np
 import pandas as pd
+import platform
 import tkinter as tk
 import os
 import webbrowser
@@ -38,9 +39,10 @@ import memory_correction_Groning_method as MC_calc_G
 import prefill as pref
 pd.options.mode.chained_assignment = None
 
-global std_short_names_list
+global std_short_names_list,groning_params_file,instruments_names_list
 
 std_values_file, std_short_names_list = lf.load_standard_csv_file()
+groning_params_file,instruments_names_list=lf.load_groning_params_file()
 
 # Function to change values of standards printed
 
@@ -122,6 +124,51 @@ def change_known_sample_values():
                     entry_9_dict[text_list_9_col6[i]].config(state="disabled")
     return
 
+# Function to change the values of groning parameters 
+
+def change_groning_params():
+    global groning_params, entry_12_list_col1, entry_12_list_col2, entry_12_list_col3, option_name_12
+    if option_protocol.get()=="Gröning mode":
+        m=0
+        for i in range(0,3):
+            m=m+1
+            for k in range(0, len(instruments_names_list)):
+                if option_name_12.get()==instruments_names_list[k]:
+                    groning_params[entry_12_list_col1[i]].config(state="normal")
+                    groning_params[entry_12_list_col1[i]].delete("1.0", "end")
+                    groning_params[entry_12_list_col1[i]].insert("1.0",str(groning_params_file[groning_params_file.columns[m]].iloc[k]))
+                    groning_params[entry_12_list_col1[i]].config(state="disabled")
+                    m=m+3
+                    groning_params[entry_12_list_col2[i]].config(state="normal")
+                    groning_params[entry_12_list_col2[i]].delete("1.0", "end")
+                    groning_params[entry_12_list_col2[i]].insert("1.0",str(groning_params_file[groning_params_file.columns[m]].iloc[k]))
+                    groning_params[entry_12_list_col2[i]].config(state="disabled")
+                    m=m-3
+    if option_protocol.get()=="Gröning d17O mode":
+        m=0
+        for i in range(0,3):
+            m=m+1
+            for k in range(0, len(instruments_names_list)):
+                if option_name_12.get()==instruments_names_list[k]:
+                    groning_params[entry_12_list_col1[i]].config(state="normal")
+                    groning_params[entry_12_list_col1[i]].delete("1.0", "end")
+                    groning_params[entry_12_list_col1[i]].insert("1.0",str(groning_params_file[groning_params_file.columns[m]].iloc[k]))
+                    groning_params[entry_12_list_col1[i]].config(state="disabled")
+                    m=m+3
+                    groning_params[entry_12_list_col2[i]].config(state="normal")
+                    groning_params[entry_12_list_col2[i]].delete("1.0", "end")
+                    groning_params[entry_12_list_col2[i]].insert("1.0",str(groning_params_file[groning_params_file.columns[m]].iloc[k]))
+                    groning_params[entry_12_list_col2[i]].config(state="disabled")
+                    m=m+3       
+                    groning_params[entry_12_list_col3[i]].config(state="normal")
+                    groning_params[entry_12_list_col3[i]].delete("1.0", "end")
+                    groning_params[entry_12_list_col3[i]].insert("1.0",str(groning_params_file[groning_params_file.columns[m]].iloc[k]))
+                    groning_params[entry_12_list_col3[i]].config(state="disabled")
+                    m=m-6
+    return
+                    
+                    
+    
 # Function that gather the index of standards used to normalise data
 
 def get_index_std_normalisation():
@@ -366,21 +413,21 @@ def define_table():
 # Function to define parameters for the groning method
 
 def define_groning_parameters_table():
-    global groning_params, entry_12_list_col1, entry_12_list_col2, entry_12_list_col3
+    global groning_params, entry_12_list_col1, entry_12_list_col2, entry_12_list_col3,option_name_12,panned_w12
     if option_protocol.get()=="Gröning mode":
         try:
             panned_w12.destroy()
         except NameError:
             first_time = 1
-        panned_w12=tk.PanedWindow(m,orient="vertical", bg="#056CF2")
+        panned_w12=tk.PanedWindow(m,orient="vertical", bg="#056CF2",relief="solid")
         panned_w12.grid(row=4, column=3)
         panned_w12.place(relx=0.5, rely=0.9, anchor="center")
         label_12_4 = tk.Label(panned_w12, text="\u03B418O",
                              bg="#056CF2", fg="white", font=("Helvetica Neue", 11))
-        label_12_4.grid(row=1, column=2, sticky="NSEW")
+        label_12_4.grid(row=1, column=3, sticky="NSEW")
         label_12_5 = tk.Label(panned_w12, text="\u03B4D",
                              bg="#056CF2", fg="white", font=("Helvetica Neue", 11))
-        label_12_5.grid(row=1, column=3, sticky="NSEW")
+        label_12_5.grid(row=1, column=4, sticky="NSEW")
         entry_12_list_col1=["entry_12_2_2","entry_12_2_3","entry_12_2_4"]
         entry_12_list_col2=["entry_12_3_2","entry_12_3_3","entry_12_3_4"]
     if option_protocol.get()=="Gröning d17O mode":
@@ -389,42 +436,50 @@ def define_groning_parameters_table():
         except NameError:
             first_time = 1
         panned_w12=tk.PanedWindow(m,orient="vertical", bg="#056CF2")
-        panned_w12.grid(row=4, column=4)
+        panned_w12.grid(row=4, column=5)
         panned_w12.place(relx=0.5, rely=0.9, anchor="center")
         label_12_4 = tk.Label(panned_w12, text="\u03B418O",
                              bg="#056CF2", fg="white", font=("Helvetica Neue", 11))
-        label_12_4.grid(row=1, column=2, sticky="NSEW")
+        label_12_4.grid(row=1, column=3, sticky="NSEW")
         label_12_5 = tk.Label(panned_w12, text="\u03B4D",
                              bg="#056CF2", fg="white", font=("Helvetica Neue", 11))
-        label_12_5.grid(row=1, column=3, sticky="NSEW")
+        label_12_5.grid(row=1, column=4, sticky="NSEW")
         label_12_6=tk.Label(panned_w12, text="\u03B417O",
                              bg="#056CF2", fg="white", font=("Helvetica Neue", 11))
-        label_12_6.grid(row=1, column=4, sticky="NSEW")
+        label_12_6.grid(row=1, column=5, sticky="NSEW")
         entry_12_list_col1=["entry_12_2_2","entry_12_2_3","entry_12_2_4"]
         entry_12_list_col2=["entry_12_3_2","entry_12_3_3","entry_12_3_4"]
         entry_12_list_col3=["entry_12_4_2","entry_12_4_3","entry_12_4_4"]
     if option_protocol.get()=="Gröning mode" or option_protocol.get()=="Gröning d17O mode":
         label_12_1=tk.Label(panned_w12, text="alpha",
                              bg="#056CF2", fg="white", font=("Helvetica Neue", 11))
-        label_12_1.grid(row=2,column=1)
+        label_12_1.grid(row=2,column=2)
         label_12_2=tk.Label(panned_w12, text="beta",
                              bg="#056CF2", fg="white", font=("Helvetica Neue", 11))
-        label_12_2.grid(row=3,column=1)
+        label_12_2.grid(row=3,column=2)
         label_12_3=tk.Label(panned_w12, text="balance",
                              bg="#056CF2", fg="white", font=("Helvetica Neue", 11))
-        label_12_3.grid(row=4,column=1)
+        label_12_3.grid(row=4,column=2)
         groning_params={}
         for i in range(0,3):
-            entry=tk.Entry(panned_w12,width=10)
-            entry.grid(row=i+2, column=2, sticky="NSEW")
-            groning_params[entry_12_list_col1[i]] = entry
-            entry=tk.Entry(panned_w12,width=10)
+            entry=tk.Text(panned_w12,height=1, width=10,state="disabled")
             entry.grid(row=i+2, column=3, sticky="NSEW")
+            groning_params[entry_12_list_col1[i]] = entry
+            entry=tk.Text(panned_w12,height=1, width=10,state="disabled")
+            entry.grid(row=i+2, column=4, sticky="NSEW")
             groning_params[entry_12_list_col2[i]] = entry
             if option_protocol.get()=="Gröning d17O mode":
-                entry=tk.Entry(panned_w12,width=10)
-                entry.grid(row=i+2, column=4, sticky="NSEW")
+                entry=tk.Text(panned_w12,height=1, width=10,state="disabled")
+                entry.grid(row=i+2, column=5, sticky="NSEW")
                 groning_params[entry_12_list_col3[i]] = entry
+
+        option_name_12 = tk.StringVar()
+        option_name_12.set("INSTRUMENT NAME")
+        option_menu_12 = tk.OptionMenu(
+            panned_w12, option_name_12, *instruments_names_list, command=lambda _: change_groning_params())
+        option_menu_12.config(bg="#056CF2", activebackground="#056CF2",
+                           bd=0, fg="white", font=("Helvetica Neue", 10))
+        option_menu_12.grid(row=1, column=2)
         
 # Function to copy paste the working file into the raw_files_temp directory if local_directory is choosen (aswell as writting the filenaem in entry_1_1)
 
@@ -615,10 +670,10 @@ def read_user_inputs():
     if option_protocol.get() == "Gröning mode" or option_protocol.get() == "Gröning d17O mode":
         groning_params_array=np.zeros((3,isotopes_nbr))
         for i in range(0,3):
-            groning_params_array[i,0]=float(groning_params[entry_12_list_col1[i]].get())
-            groning_params_array[i,1]=float(groning_params[entry_12_list_col2[i]].get())
+            groning_params_array[i,0]=float(groning_params[entry_12_list_col1[i]].get("1.0", "end"))
+            groning_params_array[i,1]=float(groning_params[entry_12_list_col2[i]].get("1.0", "end"))
             if isotopes_nbr==3:
-                groning_params_array[i,2]=float(groning_params[entry_12_list_col3[i]].get())
+                groning_params_array[i,2]=float(groning_params[entry_12_list_col3[i]].get("1.0", "end"))
     if option_protocol.get() == "van Geldern mode" or option_protocol.get() == "van Geldern d17O mode":
         groning_params_array=[]
     return std_nbr, std_values, inj_per_std, removed_inj_per_std, inj_per_spl, removed_inj_per_spl, nbr_of_spl, operator_id, processor_id,groning_params_array
@@ -916,6 +971,7 @@ def init_variables_processing():
     starting_index_spl = removed_inj_per_spl
     result_file_df, len_std_injections, len_spl_injections = lf.load_csv_file_into_DF(
         filename, std_nbr, inj_per_std, spl_nbr, inj_per_spl)
+    
     MCs=[]
     slope_MC_list=[]
     p_values_MC_list=[]
@@ -1012,7 +1068,10 @@ def proceeding():
 
 m = tk.Tk()
 m.title("ALWIC-tool")
-m.state('zoomed')
+if platform.system()=="Linux":
+    m.state('normal')
+else:
+    m.state("zoomed")
 m.configure(bg="#BEE7E8")
 
 # Panned window 5 (Known sample positions)

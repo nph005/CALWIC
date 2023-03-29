@@ -34,9 +34,26 @@ def load_standard_csv_file():
         List of the names of standards 
 
     """
-    std_values_file=pd.read_csv("./files/std_values.csv",sep=",")
-    std_short_names_list=std_values_file["SHORT NAME"].tolist()
+    std_values_file=pd.read_csv("./files/std_values.csv",sep=None,engine="python")
+    std_short_names_list=std_values_file[std_values_file.columns[1]].tolist()
     return std_values_file,std_short_names_list
+
+# Function to load groning parameters csv file 
+
+def load_groning_params_file():
+    """
+    load groning parameters values from groning.csv
+
+    Returns
+    -------
+    groning_params_file : pandas.DataFrame
+        Values of exponential parameters contained in the file 
+    instruments_names_list : list
+        List of the names of instruments 
+    """
+    groning_params_file=pd.read_csv("./files/groning_exp_parameters.csv",sep=None,engine="python")
+    instruments_names_list=groning_params_file[groning_params_file.columns[0]].tolist()
+    return groning_params_file,instruments_names_list
 
 # Function to load the results file and open it as a DataFrame
 
@@ -67,7 +84,7 @@ def load_csv_file_into_DF(filename,std_nbr,inj_per_std,spl_nbr,inj_per_spl):
         Total number of injections of samples
 
     """
-    result_file_df=pd.read_csv("./files/raw_files_temp/"+filename+".csv",sep=",",skipinitialspace=True)
+    result_file_df=pd.read_csv("./files/raw_files_temp/"+filename+".csv",sep=None,skipinitialspace=True,engine="python")
     result_file_df=result_file_df.rename(columns={"d(18_16)Mean":"raw_value_d18O","d(D_H)Mean":"raw_value_dD"})
     if "d(17_16)Mean" in result_file_df.columns:
         result_file_df=result_file_df.rename(columns={"d(17_16)Mean":"raw_value_d17O"})   
@@ -138,7 +155,7 @@ def loading_file(option_protocol1,entry_1_1):
 
     """
     filename=downloading_file(option_protocol1,entry_1_1)
-    result_file_df=pd.read_csv("./files/raw_files_temp/"+filename+".csv",sep=",",skipinitialspace=True)
+    result_file_df=pd.read_csv("./files/raw_files_temp/"+filename+".csv",sep=None,skipinitialspace=True,engine="python")
     port_temp=result_file_df["Port"].tolist()
     port_list=[port_temp[0]]
     for i in range(1,len(port_temp)):
