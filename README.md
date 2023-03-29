@@ -33,7 +33,7 @@ This will create an environment called ALWIC_env which can be activated with the
  conda activate ALWIC_env
 ```
 
-The environment has to be activated each time you want to run ALWIC-tool. It can also be done in Anaconda Navigator by choosing it instead of base on top left of the window. After this you can open the file called GUI\_main.py in Spyder and run it. The [documentation](link_to_doc) contains more information on how to run ALWIC.
+The environment has to be activated each time you want to run ALWIC-tool. It can also be done in Anaconda Navigator by choosing it instead of base on top left of the window. After this you can open the file called GUI\_main.py in Spyder and run it. The [documentation](https://github.com/baptistebordet1/ALWIC-tool/blob/main/project/files/user_documentation.pdf) contains more information on how to run ALWIC.
 
 ### With another Python distribution
 
@@ -43,7 +43,7 @@ You will need to install the packages included in the requirements.txt file. Thi
 pip install requirements.txt
 ```
 
-Then you can run the GUI\_main.py file and start processing. The [documentation](link_to_doc) contains more information on how to use ALWIC.
+Then you can run the GUI\_main.py file and start processing. The [documentation](https://github.com/baptistebordet1/ALWIC-tool/blob/main/project/files/user_documentation.pdf) contains more information on how to use ALWIC.
 
 ## Licence 
 ALWIC-tool is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
