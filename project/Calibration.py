@@ -127,8 +127,9 @@ def d_excess_calc(final_value_file_df):
 # Function to calculate the 17O excess on the calibrated values 
 
 def O17_excess_calc(final_value_file_df):
-    final_value_file_df["final_value_17O_excess"]=np.log(final_value_file_df["final_value_d17O"]+1)-0.528*np.log(final_value_file_df["final_value_d18O"]+1)
+    final_value_file_df["final_value_17O_excess"]=np.log(final_value_file_df["final_value_d17O"]/1000+1)-0.528*np.log(final_value_file_df["final_value_d18O"]/1000+1)
     return final_value_file_df
+
 # Function to raise a flag if humidity is too low or too high 
 
 def flags(final_value_file_df,iso_type_list,inj_per_std,std_nbr):
@@ -147,6 +148,7 @@ def flags(final_value_file_df,iso_type_list,inj_per_std,std_nbr):
         DataFrame with all correction
 
     """
+    final_value_file_df["Hum Flag"]=""
     final_value_file_df["Hum Flag"]=0
     for i in range(0,len(final_value_file_df)):
         if final_value_file_df["H2O_Mean"].iloc[i]>23000 or final_value_file_df["H2O_Mean"].iloc[i]<17000:

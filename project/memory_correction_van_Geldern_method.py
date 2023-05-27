@@ -299,5 +299,5 @@ def wrapper_memory_coefficient_van_geldern_d17O(iso_type_list,MC_one,inj_per_std
     MCs={"d18O":[],"dD":[],"d17O":[]}
     for i,iso_type in enumerate(iso_type_list):
         MCs[iso_type]=non_linear_optimisation(inj_per_std, cons, bounds, last_injections, MC_one, result_file_df, len_std_injections, iso_type, i,std_nbr,idx_std_to_use)
-        result_file_df=delta_calc_MC(MCs[iso_type],last_injections,result_file_df,inj_per_std,iso_type,i)
-    return result_file_df,MCs
+        corrected_file_df=delta_calc_MC(MCs[iso_type],last_injections,result_file_df,inj_per_std,iso_type,i)
+    return corrected_file_df,MCs

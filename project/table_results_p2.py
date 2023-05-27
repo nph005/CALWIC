@@ -53,7 +53,7 @@ def create_samples_results_table(page_results_2, spl_results, protocol_type):
         count = 0
         for j in range(0, len(spl_results[0])):
             table.insert(parent='', index='end', iid=count, text='',
-                         values=(str(spl_results[0][j]), str(spl_results[1][j]), str(spl_results[3][j]), str(spl_results[5][j])))
+                         values=(str(spl_results[1][j]), str(spl_results[2][j]), str(spl_results[4][j]), str(spl_results[6][j])))
             count = count+1
     if protocol_type == 1 or protocol_type==3 :
         table['columns'] = ('Sample position', 'd18 mean',
@@ -74,7 +74,7 @@ def create_samples_results_table(page_results_2, spl_results, protocol_type):
         count = 0
         for j in range(0, len(spl_results[0])):
             table.insert(parent='', index='end', iid=count, text='',
-                         values=(str(spl_results[0][j]), str(spl_results[1][j]), str(spl_results[3][j]), str(spl_results[5][j]), str(spl_results[7][j])))
+                         values=(str(spl_results[1][j]), str(spl_results[2][j]), str(spl_results[4][j]), str(spl_results[6][j]), str(spl_results[8][j])))
             count = count+1
     sb = ttk.Scrollbar(page_results_2, orient="vertical")
     table.config(yscrollcommand=sb.set)

@@ -1,0 +1,120 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sunday May 21 2023
+
+@author: Baptiste Bordet : https://orcid.org/0000-0002-9994-7813
+
+This file is part of ALWIC-tool.
+
+ALWIC-tool is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
+
+ALWIC-tool is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with ALWIC-tool. If not, see http://www.gnu.org/licenses
+"""
+
+import tkinter as tk 
+# Function which checks if there is format errors in the input from user
+
+def check_errors(Main_window):
+    error=0
+    Main_window.std_nbr = Main_window.entry_4_1.get()
+    if Main_window.std_nbr.isdigit() == False:
+        error=1
+        tk.messagebox.showwarning("Warning", "Please enter a number of standards  !",parent=Main_window.master_window)
+        return error
+    Main_window.std_nbr = int(Main_window.std_nbr)
+    if Main_window.std_nbr <= 0:
+        error=1
+        tk.messagebox.showwarning("Warning", "You entered a negative value in the number of standard ! ",parent=Main_window.master_window)
+        return error
+    Main_window.inj_per_std = Main_window.entry_7_1.get()
+    if Main_window.inj_per_std.isdigit() == False:
+        error=1
+        tk.messagebox.showwarning("Warning", "You entered a non-authorized value in the number of injection per standard !",parent=Main_window.master_window)
+        return error
+    Main_window.inj_per_std = int(Main_window.inj_per_std)
+    if Main_window.inj_per_std <= 0:
+        error=1
+        tk.messagebox.showwarning("Warning", "You entered a negative value in the number of injection per standard ! ",parent=Main_window.master_window)
+        return error 
+    Main_window.removed_inj_per_std = Main_window.entry_7_2.get()
+    if Main_window.removed_inj_per_std.isdigit() == False:
+        error=1
+        tk.messagebox.showwarning("Warning", "You entered a non-authorized value in the number of removed injection per standard !",parent=Main_window.master_window)
+        return error
+    Main_window.removed_inj_per_std = int(Main_window.removed_inj_per_std)
+    if Main_window.removed_inj_per_std < 0:
+        error=1
+        tk.messagebox.showwarning( "Warning", "You entered a negative value in the number of removed injection per standard !",parent=Main_window.master_window)
+        return error
+    Main_window.spl_nbr = Main_window.entry_6_1.get()
+    if Main_window.spl_nbr.isdigit() == False:
+        error=1
+        tk.messagebox.showwarning("Warning", "You entered a non-authorized value in the number of sample !",parent=Main_window.master_window)
+        return error
+    Main_window.spl_nbr = int(Main_window.spl_nbr)
+    if Main_window.spl_nbr <= 0:
+        error=1
+        tk.messagebox.showwarning("Warning", "You entered a negative value in the number of sample ! ",parent=Main_window.master_window)
+        return error
+    Main_window.inj_per_spl = Main_window.entry_6_2.get()
+    if Main_window.inj_per_spl.isdigit() == False:
+        error=1
+        tk.messagebox.showwarning("Warning", "You entered a non-authorized value in the number of injection per sample ! ",parent=Main_window.master_window)
+        return error 
+    Main_window.inj_per_spl = int(Main_window.inj_per_spl)
+    if Main_window.inj_per_spl <= 0:
+        error = 1
+        tk.messagebox.showwarning("Warning", "You entered a negative value in the number of injection per sample ! ",parent=Main_window.master_window)
+        return error
+    Main_window.removed_inj_per_spl = Main_window.entry_6_3.get()
+    if Main_window.removed_inj_per_spl.isdigit() == False:
+        error=1
+        tk.messagebox.showwarning("Warning", "You entered a non-authorized value in the number of removed injection per sample !",parent=Main_window.master_window)
+        return error
+    Main_window.removed_inj_per_spl = int(Main_window.removed_inj_per_spl)
+    if Main_window.removed_inj_per_spl < 0:
+        error=1
+        tk.messagebox.showwarning("Warning", "You entered a negative value in the number of removed injection per sample ! ",parent=Main_window.master_window)
+        return error
+    if Main_window.removed_inj_per_spl>Main_window.inj_per_spl:
+        error=1
+        tk.messagebox.showwarning("Warning","You can not remove more than you inject :) ",parent=Main_window.master_window)
+        return error
+    if Main_window.removed_inj_per_std>Main_window.inj_per_std:
+        error=1
+        tk.messagebox.showwarning("Warning","You can not remove more than you inject :) ",parent=Main_window.master_window)
+        return error
+    if Main_window.var_5_1.get()==1:
+        if Main_window.entry_5_1.get().isdigit()==False: 
+            error=1
+            tk.messagebox.showwarning("Warning", "Please enter a number of spy samples !",parent=Main_window.master_window)
+            return error
+        if int(Main_window.entry_5_1.get()) <= 0:
+            error=1
+            tk.messagebox.showwarning("Warning", "You entered a negative value in the number of standard ! ",parent=Main_window.master_window)
+            return error
+        for i in Main_window.option_name_spy_table_dict:
+            if Main_window.option_name_spy_table_dict[i].get()=="Select STD":
+                error=1
+                tk.messagebox.showwarning("Warning", "You haven't filled a known sample in the known sample table ",parent=Main_window.master_window)
+                return error
+    if Main_window.entry_3_1.get()=="":
+        error=1
+        tk.messagebox.showwarning("Warning", "You haven't filled a filename ",parent=Main_window.master_window)
+        return error
+    for i in Main_window.option_name_std_table_dict:
+        if Main_window.option_name_std_table_dict[i].get()=="Select STD":
+            error=1
+            tk.messagebox.showwarning("Warning", "You haven't filled a standard in the standard table ",parent=Main_window.master_window)
+            return error
+    if Main_window.option_protocol.get()=="Gröning mode" or Main_window.option_protocol.get()=="Gröning d17O mode":
+        if Main_window.option_name_9.get()=="INSTRUMENT NAME":
+            error=1
+            tk.messagebox.showwarning("Warning", "You forgot to fill parameters for the exponential correction ",parent=Main_window.master_window)
+            return error
+          
+    
+    
+            

@@ -20,7 +20,7 @@ from tkinter import filedialog
 from scipy import signal 
 import os
 import google_api
-import PIL
+
 
 save_extension=".txt"
 
@@ -221,12 +221,12 @@ def save_sample_results_file(spl_results,filename,protocol_type,directory_path):
     data_understood_pd=[]
     if protocol_type==0 or protocol_type==2:
         for i in range(0,len(spl_results[0])):
-            data_understood_pd.append([spl_results[0][i],spl_results[1][i],spl_results[2][i],spl_results[3][i],spl_results[4][i]]) 
-        df_tosave=pd.DataFrame(data=data_understood_pd,columns=["Sample_name","avg_d18O","std_dev_d18O","avg_dD","std_dev_dD"])
+            data_understood_pd.append([spl_results[0][i],spl_results[1][i],spl_results[2][i],spl_results[3][i],spl_results[4][i],spl_results[5][i]]) 
+        df_tosave=pd.DataFrame(data=data_understood_pd,columns=["Time code","Sample_name","avg_d18O","std_dev_d18O","avg_dD","std_dev_dD"])
     if protocol_type==1 or protocol_type==3:
         for i in range(0,len(spl_results[0])):
-            data_understood_pd.append([spl_results[0][i],spl_results[1][i],spl_results[2][i],spl_results[3][i],spl_results[4][i],spl_results[5][i],spl_results[6][i]])
-        df_tosave=pd.DataFrame(data=data_understood_pd,columns=["Sample_name","avg_d18O","std_dev_d18O","avg_dD","std_dev_dD","avg_d17O","std_dev_d17O"])
+            data_understood_pd.append([spl_results[0][i],spl_results[1][i],spl_results[2][i],spl_results[3][i],spl_results[4][i],spl_results[5][i],spl_results[6][i],spl_results[7][i]])
+        df_tosave=pd.DataFrame(data=data_understood_pd,columns=["Time Code","Sample_name","avg_d18O","std_dev_d18O","avg_dD","std_dev_dD","avg_d17O","std_dev_d17O"])
     df_tosave["Flag"]=0
     for i in range(0,len(df_tosave)):
         if df_tosave["std_dev_d18O"].iloc[i]>0.06 or df_tosave["std_dev_dD"].iloc[i]>0.21 : # Change here the thresholds for flags of std dev on samples
@@ -264,21 +264,21 @@ def save_control_spl_file(known_sample_results,known_values,filename,protocol_ty
     data_understood_pd=[]
     if protocol_type==0 or protocol_type==2:
         for i in range(0,len(known_sample_results[0])):
-            residuals=known_sample_results[1][i]-known_values[i,0]
+            residuals=known_sample_results[2][i]-known_values[i,0]
             residuals=round(residuals,2)
-            residuals2=known_sample_results[3][i]-known_values[i,1]
+            residuals2=known_sample_results[4][i]-known_values[i,1]
             residuals2=round(residuals2,2)
-            data_understood_pd.append([known_sample_results[0][i],known_sample_results[1][i],known_values[i,0],residuals,known_sample_results[0][i],known_sample_results[3][i],known_values[i,1],residuals2])
-        df_tosave=pd.DataFrame(data=data_understood_pd,columns=["vials d18O","measured d18O","True d18O","residuals d18O","vials dD","measured dD","True dD","residuals dD"])
+            data_understood_pd.append([known_sample_results[0][i],known_sample_results[1][i],known_sample_results[2][i],known_values[i,0],residuals,known_sample_results[1][i],known_sample_results[4][i],known_values[i,1],residuals2])
+        df_tosave=pd.DataFrame(data=data_understood_pd,columns=["Time","vials d18O","measured d18O","True d18O","residuals d18O","vials dD","measured dD","True dD","residuals dD"])
     if protocol_type==1 or protocol_type==3:
         for i in range(0,len(known_sample_results[0])):
-            residuals=known_sample_results[1][i]-known_values[i,0]
+            residuals=known_sample_results[2][i]-known_values[i,0]
             residuals=round(residuals,2)
-            residuals2=known_sample_results[3][i]-known_values[i,1]
+            residuals2=known_sample_results[4][i]-known_values[i,1]
             residuals2=round(residuals2,2)
-            residuals3=known_sample_results[5][i]-known_values[i,2]
+            residuals3=known_sample_results[6][i]-known_values[i,2]
             residuals3=round(residuals3,2)
-            data_understood_pd.append([known_sample_results[0][i],known_sample_results[1][i],known_values[i,0],residuals,known_sample_results[0][i],known_sample_results[3][i],known_values[i,1],residuals2,known_sample_results[0][i],known_sample_results[5][i],known_values[i,2],residuals3])
+            data_understood_pd.append([known_sample_results[0][i],known_sample_results[1][i],known_sample_results[2][i],known_values[i,0],residuals,known_sample_results[1][i],known_sample_results[4][i],known_values[i,1],residuals2,known_sample_results[1][i],known_sample_results[6][i],known_values[i,2],residuals3])
         df_tosave=pd.DataFrame(data=data_understood_pd,columns=["vials d18O","measured d18O","True d18O","residuals d18O","vials dD","measured dD","True dD","residuals dD","vials d17O","measured d17O","True d17O","residuals d17O"])    
     df_tosave.to_csv(directory_path+filename+"_control_samples_results"+save_extension,index=False,sep=",")
     return
@@ -304,18 +304,9 @@ def save_result_file(final_value_file_df,filename,directory_path):
     final_value_file_df.to_csv(directory_path+filename+"_final_file"+save_extension,index=False,sep=",")
     return 
 
-def set_local():
-    global saving_place
-    saving_place="local"
-    where_to_save.destroy()
-    
 
-def set_drive():
-    global saving_place
-    saving_place="drive"
-    where_to_save.destroy()
     
-def save_all_files(filename,spl_results,final_value_file_df,protocol_type,calibration_param_list,inj_per_std,page_results_2,MCs,single_factor_mean,exp_params,std_uncheck,operator_id,processor_id,option_protocol,std_nbr,starting_index_std,residuals_std,std_values,known_sample_results=None,known_values=None):
+def save_all_files(page_results_2_class):
     """
     Wrapper to save all the files 
 
@@ -333,7 +324,7 @@ def save_all_files(filename,spl_results,final_value_file_df,protocol_type,calibr
         Calibration curve parameters
     inj_per_std : int
         Injections per standard
-    page_results_2 :  tkinter.Toplevel()
+    page_results_2_class :  tkinter.Toplevel()
         Second result page
     MCs : dict
         Contains the Memory coefficients after optimization
@@ -367,34 +358,30 @@ def save_all_files(filename,spl_results,final_value_file_df,protocol_type,calibr
     None.  
 
     """
-    global where_to_save, saving_place
-    saving_place=""
-    directory_path=""
-    saved=0
-    where_to_save=tk.Toplevel(page_results_2)
-    where_to_save_width = 330
-    where_to_save_height = 110
-    x = int(int(where_to_save.winfo_screenwidth()/2) - int(where_to_save_width/2))
-    y = int(int(where_to_save.winfo_screenheight()/2) - int(where_to_save_height/2))
-    where_to_save.geometry(f"{where_to_save_width}x{where_to_save_height}+{x}+{y}")
-    where_to_save.title("location of save")
-    frame_1=tk.Frame(where_to_save,bg="white",height=70,width=330)
-    frame_1.place(relx=0,rely=0)
-    img=PIL.Image.open("GUI_images/question_mark.png")
-    img1=img.resize((40, 40))
-    image_1=PIL.ImageTk.PhotoImage(img1)
-    label_1=tk.Label(where_to_save, image = image_1,height=50,width=50,bg="white")
-    label_1.image=image_1 # to keep a reference see https://web.archive.org/web/20201111190625/http://effbot.org/pyfaq/why-do-my-tkinter-images-not-appear.htm
-    label_1.place(relx=0.05,rely=0.1)
-    label_2=tk.Label(where_to_save, text="Where do you want to save your results ?",font=("Calibri", 10),bg="white")
-    label_2.place(relx=0.25, rely=0.25)
-    local_saving=tk.Button(where_to_save,text="Local folder",bg="white",font=("Calibri", 9),command=set_local)
-    local_saving.place(relx=0.3,rely=0.7)
-    drive_saving=tk.Button(where_to_save,text="Google Drive folder",bg="white",font=("Calibri", 9),command=set_drive)
-    drive_saving.place(relx=0.6,rely=0.7)
-    where_to_save.transient(page_results_2)
-    where_to_save.grab_set()
-    page_results_2.wait_window(where_to_save)
+    # unpack variables needed for saving 
+    filename = page_results_2_class.main_window.filename
+    spl_results = page_results_2_class.main_window.spl_results
+    final_value_file_df = page_results_2_class.main_window.final_value_file_df
+    protocol_type =page_results_2_class.main_window.protocol_type
+    calibration_param_list = page_results_2_class.main_window.calibration_param_list
+    inj_per_std = page_results_2_class.main_window.inj_per_std
+    page_results_2=page_results_2_class.page_results_2
+    MCs = page_results_2_class.main_window.MCs
+    single_factor_mean = page_results_2_class.main_window.single_factor_mean
+    exp_params = page_results_2_class.main_window.exp_params
+    std_uncheck = page_results_2_class.main_window.std_uncheck
+    operator_id = page_results_2_class.main_window.operator_id
+    processor_id = page_results_2_class.main_window.processor_id
+    option_protocol = page_results_2_class.main_window.option_protocol
+    std_nbr = page_results_2_class.main_window.std_nbr
+    starting_index_std = page_results_2_class.main_window.removed_inj_per_std
+    residuals_std = page_results_2_class.main_window.residuals_std
+    std_values = page_results_2_class.main_window.std_values
+    if type(page_results_2_class.main_window.known_sample_results)==list:
+        known_sample_results= page_results_2_class.main_window.known_sample_results
+        known_values = page_results_2_class.main_window.known_values
+    saving_place = page_results_2_class.saving_place
+    
     if saving_place=="local":
         directory_path=filedialog.askdirectory(parent=page_results_2)
         directory_path=directory_path+"/"
@@ -415,5 +402,6 @@ def save_all_files(filename,spl_results,final_value_file_df,protocol_type,calibr
             files_to_upload=os.listdir("./files/saving_temp/")
             for file in files_to_upload:
                 google_api.upload_files("./files/saving_temp", file)
+                os.remove("./files/saving_temp/"+file)
         tk.messagebox.showinfo("Information","Data Saved",parent=page_results_2)
     return

@@ -63,9 +63,6 @@ def calculate_parameters_standards(final_value_file_df,protocol_type,starting_in
     avg_std_list=[]
     std_dev_std_list=[]
     std_col1_list=[]
-    if protocol_type==0 or protocol_type==1:
-        slopes_MC_list=[]
-        p_values_MC_list=[]
     for i in range(1,std_nbr):
         std_col1_list.append("STD "+str(i+1))
         avg_std_list.append("")
@@ -92,10 +89,9 @@ def calculate_parameters_standards(final_value_file_df,protocol_type,starting_in
                 p_value_temp=round(p_value_temp,4)
                 slopes_MC_list.append(slope_temp)
                 p_values_MC_list.append(p_value_temp)
-    if protocol_type==0 or protocol_type==1:
-        return slopes_MC_list,p_values_MC_list,avg_std_list,std_dev_std_list,std_col1_list
-    if protocol_type==2 or protocol_type==3:
-        return avg_std_list,std_dev_std_list,std_col1_list
+    
+    return slopes_MC_list,p_values_MC_list,avg_std_list,std_dev_std_list,std_col1_list
+
 
 # Function to calculate standards residuals not used in calibration 
 
@@ -196,12 +192,14 @@ def calculate_spl_parameters(final_value_file_df,protocol_type,starting_index_sp
     avg_spl_d_excess_list=[]
     std_dev_d_excess_list=[]
     spl_name_list=[]
+    spl_time_list=[]
     avg_known_spl_18_list=[]
     std_dev_known_spl_18_list=[]
     avg_known_spl_D_list=[]
     std_dev_known_spl_D_list=[]
     avg_known_spl_17_list=[]
     std_dev_known_spl_17_list=[] 
+    known_spl_time_list=[]
     if idx_known_sample!=None:
         for i in range(0,spl_nbr):
             if any(len_std_injections+i*inj_per_spl+starting_index_spl==idx_known_spl for idx_known_spl in idx_known_sample):
@@ -224,6 +222,8 @@ def calculate_spl_parameters(final_value_file_df,protocol_type,starting_index_sp
                     std_dev_k_spl_17_temp=np.std(final_value_file_df["final_value_d17O"].iloc[len_std_injections+i*inj_per_spl+starting_index_spl:len_std_injections+i*inj_per_spl+inj_per_spl])
                     std_dev_k_spl_17_temp=round(std_dev_k_spl_17_temp,4)
                     std_dev_known_spl_17_list.append(std_dev_k_spl_17_temp)         
+                known_sample_time_temp=final_value_file_df["Time Code"].iloc[len_std_injections+i*inj_per_spl+starting_index_spl]
+                known_spl_time_list.append(known_sample_time_temp)
             else: 
                 avg_18_temp=np.mean(final_value_file_df["final_value_d18O"].iloc[len_std_injections+i*inj_per_spl+starting_index_spl:len_std_injections+i*inj_per_spl+inj_per_spl])
                 avg_18_temp=round(avg_18_temp,4)
@@ -252,13 +252,17 @@ def calculate_spl_parameters(final_value_file_df,protocol_type,starting_index_sp
                 std_dev_d_excess_list.append(std_dev_excess_temp)
                 spl_name_temp=final_value_file_df["Identifier 1"].iloc[len_std_injections+i*inj_per_spl+starting_index_spl]
                 spl_name_list.append(spl_name_temp)
+                spl_time_temp=final_value_file_df["Time Code"].iloc[len_std_injections+i*inj_per_spl+starting_index_spl]
+                spl_time_list.append(spl_time_temp)
         known_sample_results=[]
+        known_sample_results.append(known_spl_time_list)
         known_sample_results.append(port_known_sample)
         known_sample_results.append(avg_known_spl_18_list)
         known_sample_results.append(std_dev_known_spl_18_list)
         known_sample_results.append(avg_known_spl_D_list)
         known_sample_results.append(std_dev_known_spl_D_list)
         spl_results=[]
+        spl_results.append(spl_time_list)
         spl_results.append(spl_name_list)
         spl_results.append(avg_spl_18_list)
         spl_results.append(std_dev_18_spl_list)
@@ -300,7 +304,10 @@ def calculate_spl_parameters(final_value_file_df,protocol_type,starting_index_sp
             std_dev_d_excess_list.append(std_dev_excess_temp)
             spl_name_temp=final_value_file_df["Identifier 1"].iloc[len_std_injections+i*inj_per_spl+starting_index_spl]
             spl_name_list.append(spl_name_temp)
+            spl_time_temp=final_value_file_df["Time Code"].iloc[len_std_injections+i*inj_per_spl+starting_index_spl]
+            spl_time_list.append(spl_time_temp)
             spl_results=[]
+            spl_results.append(spl_time_list)
             spl_results.append(spl_name_list)
             spl_results.append(avg_spl_18_list)
             spl_results.append(std_dev_18_spl_list)
@@ -313,4 +320,18 @@ def calculate_spl_parameters(final_value_file_df,protocol_type,starting_index_sp
             spl_results.append(avg_spl_d_excess_list)
             spl_results.append(std_dev_d_excess_list)
     return spl_results,known_sample_results
- 
+
+def wrapper_parameters_calculation(final_value_file_df,protocol_type,removed_inj_per_std,std_nbr,inj_per_std,iso_type_list,is_residuals_results_table,is_spy_results_table,var_std_table_dict,std_values,removed_inj_per_spl,spl_nbr,inj_per_spl,len_std_injections,port_known_samples_list,idx_known_sample):
+    slope_MC_list, p_values_MC_list, avg_std_list, std_dev_std_list, std_col1_list = calculate_parameters_standards(final_value_file_df, protocol_type, removed_inj_per_std, std_nbr, inj_per_std, removed_inj_per_std,iso_type_list)
+    residuals_std,std_uncheck=[],[]
+    spl_results, known_sample_results=[],[]
+    if is_residuals_results_table == 1:
+        residuals_std, std_uncheck = calculate_residuals_standards(
+            final_value_file_df, var_std_table_dict, std_values, inj_per_std, removed_inj_per_std, protocol_type)
+    if is_spy_results_table == 1:
+        spl_results, known_sample_results = calculate_spl_parameters(
+            final_value_file_df, protocol_type, removed_inj_per_spl, spl_nbr, inj_per_spl, len_std_injections, port_known_samples_list, idx_known_sample)
+    if is_spy_results_table == 0:
+        spl_results, known_sample_results = calculate_spl_parameters(
+            final_value_file_df, protocol_type, removed_inj_per_spl, spl_nbr, inj_per_spl, len_std_injections)
+    return slope_MC_list, p_values_MC_list, avg_std_list, std_dev_std_list, std_col1_list, residuals_std, std_uncheck, spl_results, known_sample_results

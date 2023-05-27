@@ -45,6 +45,7 @@ def is_spy_and_is_residuals(var_6_dict,var_5_1):
             break
     if var_5_1.get()==1:
         is_spy_results_table=1
+    
     return is_residuals_results_table, is_spy_results_table
 
 # Function to create table of MC results (results page 1)
@@ -135,7 +136,7 @@ def create_MC_results_table(std_col1_list,protocol_type,page_results_1,is_residu
 
 # Function to print results of standards (raww mean and raw standard deviation)
 
-#TODO add docstring 
+
 def create_standards_results(avg_std_list,std_dev_std_list,std_col1_list,protocol_type,page_results_1,is_residuals_results_table, is_spy_results_table):
     """
     
@@ -357,6 +358,8 @@ def create_known_sample_results_table(known_sample_results,page_results_1,known_
     None. Only prints the table
 
     """
+    if is_spy_results_table==0:
+        return
     style=ttk.Style()
     style.theme_use("alt")
     table=ttk.Treeview(page_results_1)
@@ -373,21 +376,21 @@ def create_known_sample_results_table(known_sample_results,page_results_1,known_
     table.column("residuals",anchor="center",width=80)
     i=0
     for j in range(0,len(known_sample_results[0])):
-        residuals=known_sample_results[1][j]-known_values[j,0]
+        residuals=known_sample_results[2][j]-known_values[j,0]
         residuals=round(residuals,2)
         table.insert(parent='',index='end',iid=i,text='',
-                     values=(str(known_sample_results[0][j])+" \u03B4\u00B9\u2078O",str(known_sample_results[1][j]),str(known_values[j,0]),str(residuals)))
+                     values=(str(known_sample_results[1][j])+" \u03B4\u00B9\u2078O",str(known_sample_results[2][j]),str(known_values[j,0]),str(residuals)))
         i=i+1
-        residuals=known_sample_results[3][j]-known_values[j,1]
+        residuals=known_sample_results[4][j]-known_values[j,1]
         residuals=round(residuals,2)
         table.insert(parent='',index='end',iid=i,text='',
-                     values=(str(known_sample_results[0][j])+" \u03B4D",str(known_sample_results[3][j]),str(known_values[j,1]),str(residuals)))
+                     values=(str(known_sample_results[1][j])+" \u03B4D",str(known_sample_results[4][j]),str(known_values[j,1]),str(residuals)))
         i=i+1
         if protocol_type==1:
-            residuals=known_sample_results[5][j]-known_values[j,2]
+            residuals=known_sample_results[6][j]-known_values[j,2]
             residuals=round(residuals,2)
             table.insert(parent='',index='end',iid=i,text='',
-                         values=(str(known_sample_results[0][j])+" \u03B4\u00B9\u2077O",str(known_sample_results[5][j]),str(known_values[j,2]),str(residuals)))
+                         values=(str(known_sample_results[1][j])+" \u03B4\u00B9\u2077O",str(known_sample_results[6][j]),str(known_values[j,2]),str(residuals)))
             i=i+1
     sb = ttk.Scrollbar(page_results_1, orient="vertical")
     table.config(yscrollcommand=sb.set)
