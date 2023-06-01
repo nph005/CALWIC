@@ -55,13 +55,13 @@ You should have received a copy of the GNU General Public License is available [
 ## Credits 
 
 Thanks to Hans Christian Steen Larsen who initiated the project; Daniele Zannoni for all the support during the development of this tool; Arny Sveinbjörnsdottir for the comments made from a user perspective. 
-Thanks to Melanie Behrens and Manfred Gröning for the help in the implementation of one of the method. 
-Thanks to the teams at AWI, EPFL and LSCE who tested the code, your feedbacks were precious. 
-Finally a special thanks to Pauline Gayrin and Clara Berneuil for the emotional support a well as usefull discussion. 
+Thanks to Manfred Gröning for the help provided in the implementation of his method.
+Thanks to Melanie Behrens for providing files for the tests.
+Finally a special thanks to Pauline Gayrin and Clara Berneuil for the emotional support as well as usefull discussion. 
 
 ## Contribution Guidelines 
 
-Contributions to the code are encouraged. 
+Contributions to the code are encouraged especially adding new method for memory correction. 
 
 You can do it either by opening an issue to notify problems in the code (https://docs.github.com/en/issues/tracking-your-work-with-issues/creating-an-issue) or a pull request if you want to fix or add features (https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) 
 
