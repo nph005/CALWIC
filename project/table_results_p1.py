@@ -386,7 +386,7 @@ def create_known_sample_results_table(known_sample_results,page_results_1,known_
         table.insert(parent='',index='end',iid=i,text='',
                      values=(str(known_sample_results[1][j])+" \u03B4D",str(known_sample_results[4][j]),str(known_values[j,1]),str(residuals)))
         i=i+1
-        if protocol_type==1:
+        if protocol_type==1 or protocol_type==3:
             residuals=known_sample_results[6][j]-known_values[j,2]
             residuals=round(residuals,2)
             table.insert(parent='',index='end',iid=i,text='',

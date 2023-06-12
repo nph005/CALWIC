@@ -16,7 +16,7 @@ import numpy as np
 import scipy.stats as stats
 import pandas as pd 
 
-# Function that create the true vector and the measured for normalisation 
+# Function that create the true vector and the measured for normalisation (Van Geldern method)
  
 def create_normalisation_vector(iso_type,std_idx_norm,std_values,inj_per_std,result_file_df,removed_inj_per_std,k):
     """
@@ -57,7 +57,19 @@ def create_normalisation_vector(iso_type,std_idx_norm,std_values,inj_per_std,res
         measured_vector=np.append(measured_vector,measured_vector_temp)
     return true_vector, measured_vector
 
-    
+# Function that create the true vector and the measured for normalisation (Groning method)
+
+def create_normalisation_vector_groning(iso_type,std_idx_norm,std_values,inj_per_std,result_file_df,removed_inj_per_std,k):  
+    measured_vector=np.array([])
+    true_vector=np.array([])
+    for i in std_idx_norm:
+        name_idf1_std=result_file_df["Identifier 1"].iloc[i*inj_per_std]
+        for j in range(0,len(result_file_df)):
+            if name_idf1_std==result_file_df["Identifier 1"].iloc[j]:
+                measured_vector=np.append(measured_vector,result_file_df["MC_corr"+iso_type].iloc[j])
+                true_vector=np.append(true_vector,std_values[i,k])
+    return true_vector, measured_vector
+
 # Function that calculate parameters of normalisation curve
 
 def normalisation_curve_calc(iso_type,true_vector,measured_vector):
@@ -216,7 +228,7 @@ def calibration_vectors_values(measured_vector, true_vector, calibration_vectors
 
 # Function to wrap all the calibration 
 
-def wrapper_calibration(corrected_file_df,iso_type_list,std_idx_norm,std_values,inj_per_std,result_file_df,removed_inj_per_std,std_nbr):
+def wrapper_calibration(corrected_file_df,iso_type_list,std_idx_norm,std_values,inj_per_std,result_file_df,removed_inj_per_std,std_nbr,protocol_type):
     """
     Wrapper for the calibration
 
@@ -250,7 +262,12 @@ def wrapper_calibration(corrected_file_df,iso_type_list,std_idx_norm,std_values,
     calibration_param_list=[[],[]]
     calibration_vectors=[[],[]]
     for k,iso_type in enumerate(iso_type_list):
-        true_vector,measured_vector=create_normalisation_vector(iso_type, std_idx_norm, std_values, inj_per_std, result_file_df, removed_inj_per_std, k)
+        true_vector=[]
+        measured_vector=[]
+        if protocol_type==0 or protocol_type==1:
+            true_vector,measured_vector=create_normalisation_vector(iso_type, std_idx_norm, std_values, inj_per_std, result_file_df, removed_inj_per_std, k)
+        if protocol_type==2 or protocol_type==3:
+            true_vector,measured_vector=create_normalisation_vector_groning(iso_type, std_idx_norm, std_values, inj_per_std, result_file_df, removed_inj_per_std, k)
         slope,intercept=normalisation_curve_calc(iso_type, true_vector, measured_vector)
         final_value_file_df=final_value_calculation(corrected_file_df, iso_type, slope, intercept)
         calibration_param_list=calibration_curve_values(slope, intercept, calibration_param_list)

@@ -151,7 +151,7 @@ def calculate_residuals_standards(final_value_file_df, var_6_dict,std_values,inj
     
 # Function to calculate the avg and std dev of sample and residuals on known sample 
 
-def calculate_spl_parameters(final_value_file_df,protocol_type,starting_index_spl,spl_nbr,inj_per_spl,len_std_injections,port_known_sample=None,idx_known_sample=None):
+def calculate_spl_parameters(final_value_file_df,protocol_type,starting_index_spl,spl_nbr,inj_per_spl,len_std_injections,std_idx_norm,port_known_sample=None,idx_known_sample=None):
     """
     Calculate samples parameters (mean and standard deviation). This includes
     the samples and the spy samples (standards treated as samples)
@@ -170,6 +170,8 @@ def calculate_spl_parameters(final_value_file_df,protocol_type,starting_index_sp
         Injections per sample 
     len_std_injections : int 
         Total number of injections of standards
+    std_idx_norm : list 
+        List of indicies used for normalisation
     port_known_sample : list, optional
         List of port for the spy samples. The default is None.
     idx_known_sample : list, optional
@@ -201,8 +203,12 @@ def calculate_spl_parameters(final_value_file_df,protocol_type,starting_index_sp
     std_dev_known_spl_17_list=[] 
     known_spl_time_list=[]
     if idx_known_sample!=None:
-        for i in range(0,spl_nbr):
+        for i in range(0,spl_nbr+1):
+            if protocol_type==2 or protocol_type==3:
+                if any(final_value_file_df["Identifier 1"].iloc[len_std_injections+i*inj_per_spl]==final_value_file_df["Identifier 1"].iloc[m*inj_per_spl] for m in std_idx_norm):
+                    continue
             if any(len_std_injections+i*inj_per_spl+starting_index_spl==idx_known_spl for idx_known_spl in idx_known_sample):
+                print(i)
                 avg_k_spl_18_temp=np.mean(final_value_file_df["final_value_d18O"].iloc[len_std_injections+i*inj_per_spl+starting_index_spl:len_std_injections+i*inj_per_spl+inj_per_spl])
                 avg_k_spl_18_temp=round(avg_k_spl_18_temp,4)
                 avg_known_spl_18_list.append(avg_k_spl_18_temp)
@@ -276,7 +282,10 @@ def calculate_spl_parameters(final_value_file_df,protocol_type,starting_index_sp
         spl_results.append(avg_spl_d_excess_list)
         spl_results.append(std_dev_d_excess_list)
     if idx_known_sample==None:
-        for i in range(0,spl_nbr):
+        for i in range(0,spl_nbr+1):
+            if protocol_type==2 or protocol_type==3:
+                if any(final_value_file_df["Identifier 1"].iloc[len_std_injections+i*inj_per_spl]==final_value_file_df["Identifier 1"].iloc[m*inj_per_spl] for m in std_idx_norm):
+                    continue
             avg_18_temp=np.mean(final_value_file_df["final_value_d18O"].iloc[len_std_injections+i*inj_per_spl+starting_index_spl:len_std_injections+i*inj_per_spl+inj_per_spl])
             avg_18_temp=round(avg_18_temp,4)
             avg_spl_18_list.append(avg_18_temp)
@@ -321,7 +330,7 @@ def calculate_spl_parameters(final_value_file_df,protocol_type,starting_index_sp
             spl_results.append(std_dev_d_excess_list)
     return spl_results,known_sample_results
 
-def wrapper_parameters_calculation(final_value_file_df,protocol_type,removed_inj_per_std,std_nbr,inj_per_std,iso_type_list,is_residuals_results_table,is_spy_results_table,var_std_table_dict,std_values,removed_inj_per_spl,spl_nbr,inj_per_spl,len_std_injections,port_known_samples_list,idx_known_sample):
+def wrapper_parameters_calculation(final_value_file_df,protocol_type,removed_inj_per_std,std_nbr,inj_per_std,iso_type_list,is_residuals_results_table,is_spy_results_table,var_std_table_dict,std_values,removed_inj_per_spl,spl_nbr,inj_per_spl,len_std_injections,port_known_samples_list,idx_known_sample,std_idx_norm):
     slope_MC_list, p_values_MC_list, avg_std_list, std_dev_std_list, std_col1_list = calculate_parameters_standards(final_value_file_df, protocol_type, removed_inj_per_std, std_nbr, inj_per_std, removed_inj_per_std,iso_type_list)
     residuals_std,std_uncheck=[],[]
     spl_results, known_sample_results=[],[]
@@ -330,8 +339,8 @@ def wrapper_parameters_calculation(final_value_file_df,protocol_type,removed_inj
             final_value_file_df, var_std_table_dict, std_values, inj_per_std, removed_inj_per_std, protocol_type)
     if is_spy_results_table == 1:
         spl_results, known_sample_results = calculate_spl_parameters(
-            final_value_file_df, protocol_type, removed_inj_per_spl, spl_nbr, inj_per_spl, len_std_injections, port_known_samples_list, idx_known_sample)
+            final_value_file_df, protocol_type, removed_inj_per_spl, spl_nbr, inj_per_spl, len_std_injections, std_idx_norm,port_known_samples_list, idx_known_sample)
     if is_spy_results_table == 0:
         spl_results, known_sample_results = calculate_spl_parameters(
-            final_value_file_df, protocol_type, removed_inj_per_spl, spl_nbr, inj_per_spl, len_std_injections)
+            final_value_file_df, protocol_type, removed_inj_per_spl, spl_nbr, inj_per_spl, len_std_injections,std_idx_norm)
     return slope_MC_list, p_values_MC_list, avg_std_list, std_dev_std_list, std_col1_list, residuals_std, std_uncheck, spl_results, known_sample_results
