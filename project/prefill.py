@@ -44,7 +44,7 @@ def get_identifiers(option_protocol1, entry_1_1):
 
     """
     filename=lf.downloading_file(option_protocol1, entry_1_1)
-    result_file_df=pd.read_csv("./files/raw_files_temp/"+filename+".csv",sep=",",skipinitialspace=True)
+    result_file_df=pd.read_csv("./files/raw_files_temp/"+filename+".csv",sep=";",skipinitialspace=True)
     inj_nbr_df=result_file_df["Inj Nr"]
     id2_df=result_file_df["Identifier 2"]
     id1_df=result_file_df["Identifier 1"]

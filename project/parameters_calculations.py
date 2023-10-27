@@ -208,7 +208,6 @@ def calculate_spl_parameters(final_value_file_df,protocol_type,starting_index_sp
                 if any(final_value_file_df["Identifier 1"].iloc[len_std_injections+i*inj_per_spl]==final_value_file_df["Identifier 1"].iloc[m*inj_per_spl] for m in std_idx_norm):
                     continue
             if any(len_std_injections+i*inj_per_spl+starting_index_spl==idx_known_spl for idx_known_spl in idx_known_sample):
-                print(i)
                 avg_k_spl_18_temp=np.mean(final_value_file_df["final_value_d18O"].iloc[len_std_injections+i*inj_per_spl+starting_index_spl:len_std_injections+i*inj_per_spl+inj_per_spl])
                 avg_k_spl_18_temp=round(avg_k_spl_18_temp,4)
                 avg_known_spl_18_list.append(avg_k_spl_18_temp)
