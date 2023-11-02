@@ -51,7 +51,7 @@ def get_identifiers(option_protocol1, entry_1_1):
     port_df=result_file_df["Port"]
     return result_file_df,inj_nbr_df,id1_df,id2_df,port_df
 
-def counter(id1_df,id2_df,inj_nbr_df,port_df,result_file_df):
+def counter(id1_df,id2_df,inj_nbr_df,port_df):
     """
     Calculate all the parameters which needs to be prefilled
 

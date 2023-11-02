@@ -358,9 +358,9 @@ class Main_Window():
         if self.id2_df.dropna(how='all').empty == True:
             tk.messagebox.showerror("Error", "Error : Your file can't be prefilled (see documentation to know how to set-up the prefill) ",parent=self.master_window)
             return
-        self.error,*b = pref.counter(self.id1_df, self.id2_df, self.inj_nbr_df, self.port_df,self.result_file_df)
+        self.error,*b = pref.counter(self.id1_df, self.id2_df, self.inj_nbr_df, self.port_df)
         if self.error==0:
-            self.error,self.inj_per_std, self.std_nbr, self.inj_per_spl, self.spl_nbr, self.is_spy, self.known_sample_nbr, self.spy_port, self.spy_name_found, self.std_name_found=pref.counter(self.id1_df, self.id2_df, self.inj_nbr_df,self.port_df,self.result_file_df)
+            self.error,self.inj_per_std, self.std_nbr, self.inj_per_spl, self.spl_nbr, self.is_spy, self.known_sample_nbr, self.spy_port, self.spy_name_found, self.std_name_found=pref.counter(self.id1_df, self.id2_df, self.inj_nbr_df,self.port_df)
         if self.error==1:
             tk.messagebox.showerror("Error","No injection labelled with STD found",parent=self.master_window)
             return
@@ -623,8 +623,6 @@ class Main_Window():
         self.single_factor_mean=[]
         self.exp_params=[]
         length_file_user=self.std_nbr*self.inj_per_std+self.spl_nbr*self.inj_per_spl
-        print(length_file_user)
-        print(len(self.result_file_df))
         if length_file_user>len(self.result_file_df):
             error=1
             tk.messagebox.showwarning("Warning", "You have filled more injections than what your file actually contains", parent=self.master_window)
