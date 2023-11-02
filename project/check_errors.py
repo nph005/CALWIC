@@ -114,7 +114,5 @@ def check_errors(Main_window):
             error=1
             tk.messagebox.showwarning("Warning", "You forgot to fill parameters for the exponential correction ",parent=Main_window.master_window)
             return error
-          
-    
     
             

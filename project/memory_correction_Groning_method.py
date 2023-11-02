@@ -14,7 +14,7 @@ You should have received a copy of the GNU General Public License along with ALW
 """
 
 import numpy as np 
-from scipy.optimize import minimize,Bounds
+from scipy.optimize import minimize, Bounds
 import pandas as pd 
 
 # Function to calulate the fist injection of each standard/sample 

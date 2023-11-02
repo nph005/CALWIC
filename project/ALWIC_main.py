@@ -358,9 +358,9 @@ class Main_Window():
         if self.id2_df.dropna(how='all').empty == True:
             tk.messagebox.showerror("Error", "Error : Your file can't be prefilled (see documentation to know how to set-up the prefill) ",parent=self.master_window)
             return
-        self.error,*b = pref.counter(self.id1_df, self.id2_df, self.inj_nbr_df, self.port_df)
+        self.error,*b = pref.counter(self.id1_df, self.id2_df, self.inj_nbr_df, self.port_df,self.result_file_df)
         if self.error==0:
-            self.error,self.inj_per_std, self.std_nbr, self.inj_per_spl, self.spl_nbr, self.is_spy, self.known_sample_nbr, self.spy_port, self.spy_name_found, self.std_name_found=pref.counter(self.id1_df, self.id2_df, self.inj_nbr_df,self.port_df)
+            self.error,self.inj_per_std, self.std_nbr, self.inj_per_spl, self.spl_nbr, self.is_spy, self.known_sample_nbr, self.spy_port, self.spy_name_found, self.std_name_found=pref.counter(self.id1_df, self.id2_df, self.inj_nbr_df,self.port_df,self.result_file_df)
         if self.error==1:
             tk.messagebox.showerror("Error","No injection labelled with STD found",parent=self.master_window)
             return
@@ -562,7 +562,7 @@ class Main_Window():
 
 ##################METHODS USED FOR PROCESSING##################################
     
-    # Function to process data. Opens teh first page of results at the end of processing. 
+    # Function to process data. Opens the first page of results at the end of processing. 
     
     def processing(self):
         self.error_user_inputs=check_errors.check_errors(self)
@@ -609,6 +609,7 @@ class Main_Window():
     def init_variables_processing(self):
         self.get_index_std_normalisation()
         self.filename = lf.downloading_file(self.option_protocol1, self.entry_3_1)
+       
         self.iso_type_list=["d18O","dD"]
         if self.option_protocol.get()=="van Geldern d17O mode" or self.option_protocol.get()=="Gröning d17O mode":
             self.iso_type_list.append("d17O")
@@ -621,6 +622,18 @@ class Main_Window():
         self.p_values_MC_list=[]
         self.single_factor_mean=[]
         self.exp_params=[]
+        length_file_user=self.std_nbr*self.inj_per_std+self.spl_nbr*self.inj_per_spl
+        print(length_file_user)
+        print(len(self.result_file_df))
+        if length_file_user>len(self.result_file_df):
+            error=1
+            tk.messagebox.showwarning("Warning", "You have filled more injections than what your file actually contains", parent=self.master_window)
+            return error
+        if length_file_user<len(self.result_file_df):
+            result=tk.messagebox.askokcancel("Information", " You have filled less injections than what your file actually contains. \n Do you want to continue ? ")
+            if result==False:
+                error=1
+                return error
     
     # Function that gather the index of standards used to normalise data
 
@@ -823,7 +836,7 @@ class outliers_top_level():
         # Window definition
         
         self.outliers_check_page=tk.Toplevel(self.main_window.master_window)
-        self.outliers_check_page.state('zoomed')
+        self.outliers_check_page.wm_state('zoomed')
         self.outliers_check_page.configure(bg="#E8B300")
         self.outliers_check_page.title("Check processing")
         plots.memory_correction_parameters_plot(self.main_window.protocol_type, self.main_window.iso_type_list, self.main_window.std_nbr, self.main_window.inj_per_std, self.main_window.result_file_df, self.outliers_check_page, self.main_window.option_name_std_table_dict)

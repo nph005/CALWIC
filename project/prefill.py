@@ -44,14 +44,14 @@ def get_identifiers(option_protocol1, entry_1_1):
 
     """
     filename=lf.downloading_file(option_protocol1, entry_1_1)
-    result_file_df=pd.read_csv("./files/raw_files_temp/"+filename+".csv",sep=";",skipinitialspace=True)
+    result_file_df=pd.read_csv("./files/raw_files_temp/"+filename+".csv",sep=None,skipinitialspace=True,engine="python")
     inj_nbr_df=result_file_df["Inj Nr"]
     id2_df=result_file_df["Identifier 2"]
     id1_df=result_file_df["Identifier 1"]
     port_df=result_file_df["Port"]
     return result_file_df,inj_nbr_df,id1_df,id2_df,port_df
 
-def counter(id1_df,id2_df,inj_nbr_df,port_df):
+def counter(id1_df,id2_df,inj_nbr_df,port_df,result_file_df):
     """
     Calculate all the parameters which needs to be prefilled
 
@@ -115,6 +115,9 @@ def counter(id1_df,id2_df,inj_nbr_df,port_df):
             for i in range(len(inj_spl_part),0,-1):
                 if inj_spl_part.iloc[-1]==inj_spl_part.iloc[i-1]:
                     spl_nbr=spl_nbr+1
+                    
+
+                    
             error=0
             try:
                 is_spy=True

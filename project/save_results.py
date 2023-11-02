@@ -103,9 +103,15 @@ def save_std_parameters_file(calibration_param_list,inj_per_std,std_uncheck,fina
             column2.append(exp_params[i,0])
     column2.append(calibration_param_list[0][0])
     column2.append(calibration_param_list[1][0])
-    for i in range(1,std_nbr):
-        column2.append(np.mean(final_value_file_df["raw_value_d18O"].iloc[i*inj_per_std+starting_index_std:i*inj_per_std+inj_per_std]))
-        column2.append(np.std(final_value_file_df["raw_value_d18O"].iloc[i*inj_per_std+starting_index_std:i*inj_per_std+inj_per_std]))
+    if protocol_type==0 or protocol_type==1:
+        for i in range(1,std_nbr):
+            column2.append(np.mean(final_value_file_df["raw_value_d18O"].iloc[i*inj_per_std+starting_index_std:i*inj_per_std+inj_per_std]))
+            column2.append(np.std(final_value_file_df["raw_value_d18O"].iloc[i*inj_per_std+starting_index_std:i*inj_per_std+inj_per_std]))
+    elif protocol_type==2 or protocol_type==3:
+        for i in range(1,std_nbr):
+            final_value_file_df_start_inj_removed=final_value_file_df[final_value_file_df["Inj Nr"]>starting_index_std]
+            column2.append(final_value_file_df_start_inj_removed.groupby(["Identifier 1"],sort=False)["raw_value_d18O"].mean()[i])
+            column2.append(final_value_file_df_start_inj_removed.groupby(["Identifier 1"],sort=False)["raw_value_d18O"].std(ddof=0)[i]) # ddof is because Scicalib use the std deviation divided by N and pandas by N-1 by default.
     for i in range(0,len(std_uncheck)):
         column2.append(residuals_std[0][i])
         column2.append(std_values[i][0])
@@ -139,9 +145,14 @@ def save_std_parameters_file(calibration_param_list,inj_per_std,std_uncheck,fina
             column4.append(exp_params[i,1])
     column4.append(calibration_param_list[0][1])
     column4.append(calibration_param_list[1][1])
-    for i in range(1,std_nbr):
-        column4.append(np.mean(final_value_file_df["raw_value_dD"].iloc[i*inj_per_std+starting_index_std:i*inj_per_std+inj_per_std]))
-        column4.append(np.std(final_value_file_df["raw_value_dD"].iloc[i*inj_per_std+starting_index_std:i*inj_per_std+inj_per_std]))
+    if protocol_type==0 or protocol_type==1:
+        for i in range(1,std_nbr):
+            column4.append(np.mean(final_value_file_df["raw_value_dD"].iloc[i*inj_per_std+starting_index_std:i*inj_per_std+inj_per_std]))
+            column4.append(np.std(final_value_file_df["raw_value_dD"].iloc[i*inj_per_std+starting_index_std:i*inj_per_std+inj_per_std]))
+    elif protocol_type==2 or protocol_type==3:
+        for i in range(1,std_nbr):
+            column4.append(final_value_file_df_start_inj_removed.groupby(["Identifier 1"],sort=False)["raw_value_dD"].mean()[i])
+            column4.append(final_value_file_df_start_inj_removed.groupby(["Identifier 1"],sort=False)["raw_value_dD"].std(ddof=0)[i]) # ddof is because Scicalib use the std deviation divided by N and pandas by N-1 by default.
     for i in range(0,len(std_uncheck)):
         column4.append(residuals_std[1][i])
         column4.append(std_values[i][1])
@@ -176,9 +187,14 @@ def save_std_parameters_file(calibration_param_list,inj_per_std,std_uncheck,fina
                 column6.append(exp_params[i,2])
         column6.append(calibration_param_list[0][2])
         column6.append(calibration_param_list[1][2])
-        for i in range(1,std_nbr):
-            column6.append(np.mean(final_value_file_df["raw_value_d17O"].iloc[i*inj_per_std+starting_index_std:i*inj_per_std+inj_per_std]))
-            column6.append(np.std(final_value_file_df["raw_value_d17O"].iloc[i*inj_per_std+starting_index_std:i*inj_per_std+inj_per_std]))
+        if protocol_type==0 or protocol_type==1:
+            for i in range(1,std_nbr):
+                column6.append(np.mean(final_value_file_df["raw_value_d17O"].iloc[i*inj_per_std+starting_index_std:i*inj_per_std+inj_per_std]))
+                column6.append(np.std(final_value_file_df["raw_value_d17O"].iloc[i*inj_per_std+starting_index_std:i*inj_per_std+inj_per_std]))
+        elif protocol_type==2 or protocol_type==3:
+            for i in range(1,std_nbr):
+                column6.append(final_value_file_df_start_inj_removed.groupby(["Identifier 1"],sort=False)["raw_value_d17O"].mean()[i])
+                column6.append(final_value_file_df_start_inj_removed.groupby(["Identifier 1"],sort=False)["raw_value_d17O"].std(ddof=0)[i]) # ddof is because Scicalib use the std deviation divided by N and pandas by N-1 by default.
         for i in range(0,len(std_uncheck)):
             column6.append(residuals_std[2][i])
             column6.append(std_values[i][2])

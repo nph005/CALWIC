@@ -98,7 +98,7 @@ def load_csv_file_into_DF(filename,std_nbr,inj_per_std,spl_nbr,inj_per_spl):
 def downloading_file(option_protocol1,entry_1_1): 
     """
     Download the files into a temporary folder if it doesn't exists yet. 
-    It can be either downloaded from the google drive or copy paste from the alocal folder.  
+    It can be either downloaded from the google drive or copy paste from the a local folder.  
 
     Parameters
     ----------

@@ -57,7 +57,6 @@ def calculate_parameters_standards(final_value_file_df,protocol_type,starting_in
     std_col1_list : list
         Names to include in the first column of the Memory correction results in table _results_p1
     """
-    
     slopes_MC_list=[]
     p_values_MC_list=[]
     avg_std_list=[]
@@ -70,25 +69,40 @@ def calculate_parameters_standards(final_value_file_df,protocol_type,starting_in
         if protocol_type==0 or protocol_type==1:
             slopes_MC_list.append("")
             p_values_MC_list.append("")
-        for iso_type in iso_type_list:
-            avg_temp=np.mean(final_value_file_df["raw_value_"+iso_type].iloc[i*inj_per_std+starting_index_std:i*inj_per_std+inj_per_std])
-            avg_temp=round(avg_temp,3)
-            std_dev_temp=np.std(final_value_file_df["raw_value_"+iso_type].iloc[i*inj_per_std+starting_index_std:i*inj_per_std+inj_per_std])
-            std_dev_temp=round(std_dev_temp,2)
-            if iso_type=="d18O":
-                std_col1_list.append("\u03B4\u00B9\u2078O")
-            elif iso_type=="dD":
-                std_col1_list.append("\u03B4D")
-            elif iso_type=="d17O":
-                std_col1_list.append("\u03B4\u00B9\u2077O")
-            avg_std_list.append(avg_temp)
-            std_dev_std_list.append(std_dev_temp)
-            if protocol_type==0 or protocol_type==1:
+            for iso_type in iso_type_list:
+                avg_temp=np.mean(final_value_file_df["raw_value_"+iso_type].iloc[i*inj_per_std+starting_index_std:i*inj_per_std+inj_per_std])
+                avg_temp=round(avg_temp,3)
+                std_dev_temp=np.std(final_value_file_df["raw_value_"+iso_type].iloc[i*inj_per_std+starting_index_std:i*inj_per_std+inj_per_std])
+                std_dev_temp=round(std_dev_temp,2)
+                if iso_type=="d18O":
+                    std_col1_list.append("\u03B4\u00B9\u2078O")
+                elif iso_type=="dD":
+                    std_col1_list.append("\u03B4D")
+                elif iso_type=="d17O":
+                    std_col1_list.append("\u03B4\u00B9\u2077O")
+                avg_std_list.append(avg_temp)
+                std_dev_std_list.append(std_dev_temp)           
                 slope_temp,intercept,dum1,p_value_temp,dum2=stats.linregress(final_value_file_df["Inj Nr"].iloc[i*inj_per_std+starting_index_std:i*inj_per_std+inj_per_std].to_numpy(),final_value_file_df["MC_corr"+iso_type].iloc[i*inj_per_std+starting_index_std:i*inj_per_std+inj_per_std].to_numpy())
                 slope_temp=round(slope_temp,4)
                 p_value_temp=round(p_value_temp,4)
                 slopes_MC_list.append(slope_temp)
                 p_values_MC_list.append(p_value_temp)
+        if protocol_type==2 or protocol_type==3:
+            for iso_type in iso_type_list:
+                final_value_file_df=final_value_file_df[final_value_file_df["Inj Nr"]>starting_index_std]
+                avg_temp=final_value_file_df.groupby(["Identifier 1"],sort=False)["raw_value_"+iso_type].mean()[i]
+                avg_temp=round(avg_temp,3)
+                std_dev_temp=final_value_file_df.groupby(["Identifier 1"],sort=False)["raw_value_"+iso_type].std(ddof=0)[i] # ddof is because Scicalib use the std deviation divided by N and pandas by N-1 by default. 
+                std_dev_temp=round(std_dev_temp,3)
+                if iso_type=="d18O":
+                    std_col1_list.append("\u03B4\u00B9\u2078O")
+                elif iso_type=="dD":
+                    std_col1_list.append("\u03B4D")
+                elif iso_type=="d17O":
+                    std_col1_list.append("\u03B4\u00B9\u2077O")
+                avg_std_list.append(avg_temp)
+                std_dev_std_list.append(std_dev_temp)
+       
     
     return slopes_MC_list,p_values_MC_list,avg_std_list,std_dev_std_list,std_col1_list
 
@@ -203,7 +217,7 @@ def calculate_spl_parameters(final_value_file_df,protocol_type,starting_index_sp
     std_dev_known_spl_17_list=[] 
     known_spl_time_list=[]
     if idx_known_sample!=None:
-        for i in range(0,spl_nbr+1):
+        for i in range(0,spl_nbr):
             if protocol_type==2 or protocol_type==3:
                 if any(final_value_file_df["Identifier 1"].iloc[len_std_injections+i*inj_per_spl]==final_value_file_df["Identifier 1"].iloc[m*inj_per_spl] for m in std_idx_norm):
                     continue
@@ -281,7 +295,7 @@ def calculate_spl_parameters(final_value_file_df,protocol_type,starting_index_sp
         spl_results.append(avg_spl_d_excess_list)
         spl_results.append(std_dev_d_excess_list)
     if idx_known_sample==None:
-        for i in range(0,spl_nbr+1):
+        for i in range(0,spl_nbr):
             if protocol_type==2 or protocol_type==3:
                 if any(final_value_file_df["Identifier 1"].iloc[len_std_injections+i*inj_per_spl]==final_value_file_df["Identifier 1"].iloc[m*inj_per_spl] for m in std_idx_norm):
                     continue
