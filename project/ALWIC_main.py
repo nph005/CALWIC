@@ -532,7 +532,7 @@ class Main_Window():
     # Function to define the spy samples values table
     
     def define_known_sample_table(self):
-        self.port_list, self.result_file_df, self.filename = lf.loading_file(self.option_protocol1, self.entry_3_1)
+        self.port_list, self.filename = lf.loading_file(self.option_protocol1, self.entry_3_1)
         self.entry_3_1.delete(0, "end")
         self.entry_3_1.insert(0, self.filename)
         self.known_sample_nbr = self.entry_5_1.get()
@@ -554,7 +554,7 @@ class Main_Window():
         self.label_11_5 = tk.Label(self.pw11, text="\u03B4D", bg="#056CF2", fg="white", font=("Helvetica Neue", 11))
         self.label_11_5.grid(row=1, column=5, sticky="NSEW")
         if self.option_protocol.get() == "van_Geldern_d17O_mode" or self.option_protocol.get()=="Gröning_d17O_mode":
-            self.label_11_6 = tk.Label(self.pw11, text="d17O", bg="#056CF2", fg="white", font=("Helvetica Neue", 11))
+            self.label_11_6 = tk.Label(self.pw11, text="\u03B417O", bg="#056CF2", fg="white", font=("Helvetica Neue", 11))
             self.label_11_6.grid(row=1, column=6, sticky="NSEW")
         
         # Second part is mutable dependant on known_sample_nbr 
@@ -1036,7 +1036,8 @@ class page_result_1():
         self.message_text_page_results_1 = tk.Message(master=self.page_results_1, text="Plots of the results", font=("Helvetica Neue", 18), bg="#D11F00", fg="white", relief="ridge", bd=3, width=500)
         self.message_text_page_results_1.place(relx=0.3, rely=0.1, anchor="center")
         self.list_plots = plots.create_list_plots(self.main_window.std_nbr, self.main_window.protocol_type,self.main_window.iso_type_list)
-        self.fig, self.ax = plots.creation_all_plots(self.list_plots, self.main_window.corrected_file_df, self.main_window.iso_type_list, self.main_window.std_nbr, self.main_window.inj_per_std, self.main_window.option_name_std_table_dict, self.main_window.calibration_vectors, self.main_window.calibration_param_list,self.main_window.filename,False)
+        self.fig, self.ax = plots.creation_all_plots(self.list_plots, self.main_window.corrected_file_df, self.main_window.iso_type_list, self.main_window.std_nbr, self.main_window.inj_per_std, self.main_window.option_name_std_table_dict, self.main_window.calibration_vectors, self.main_window.calibration_param_list)
+        self.save_std_figure()
         self.canvas = plots.all_plots_canvas_creator(self.fig, self.page_results_1)
         table_res_1.create_calibration_results_table(self.main_window.calibration_param_list, self.page_results_1, self.main_window.protocol_type, self.main_window.is_residuals_results_table, self.main_window.is_spy_results_table)
         table_res_1.create_MC_results_table(self.main_window.std_col1_list,self.main_window.protocol_type,self.page_results_1,self.main_window.is_residuals_results_table,self.main_window.is_spy_results_table, self.main_window.slope_MC_list, self.main_window.p_values_MC_list, self.main_window.iso_type_list, self.main_window.single_factor_mean, self.main_window.exp_params)
@@ -1050,7 +1051,23 @@ class page_result_1():
         self.optionmenu_plots.place(rely=0.1, relx=0.5, anchor="center")
         self.next_page_btn = tk.Button(self.page_results_1, text="Next page", font=("Helvetica Neue", 18), relief="raised", command=self.change_page_result_2)
         self.next_page_btn.place(relx=0.77, rely=0.1, anchor="center")
-        
+    
+    # saving raw figure 
+
+    def save_std_figure(self):
+        figure=self.fig
+        if self.main_window.config_dict["saving_figures"]=="True":
+            if self.main_window.config_dict["directory_saving_figures"]!="":
+                directory_path=self.main_window.config_dict["directory_saving_figures"]
+            else:
+                directory_path=filedialog.askdirectory()
+            if self.main_window.config_dict["extension_figures"]!="":
+                extension_figure=self.main_window.config_dict["extension_figures"]
+            else: 
+                extension_figure=".png"
+            filename_raw=os.path.splitext(self.main_window.filename)[0]
+            figure.savefig(fname=Path(os.path.join(directory_path,filename_raw+"_std"+extension_figure)), dpi=100) 
+            
     # Function to change plots 
     
     def change_plots(self):
@@ -1064,7 +1081,7 @@ class page_result_1():
         except AttributeError:
             self.doesnt_exits=1
         if self.option_plots.get() == "All plots":
-            self.figure1,self.ax1=plots.creation_all_plots(self.list_plots,  self.main_window.corrected_file_df, self.main_window.iso_type_list, self.main_window.std_nbr, self.main_window.inj_per_std, self.main_window.option_name_std_table_dict, self.main_window.calibration_vectors, self.main_window.calibration_param_list,self.main_window.filename,False)
+            self.figure1,self.ax1=plots.creation_all_plots(self.list_plots,  self.main_window.corrected_file_df, self.main_window.iso_type_list, self.main_window.std_nbr, self.main_window.inj_per_std, self.main_window.option_name_std_table_dict, self.main_window.calibration_vectors, self.main_window.calibration_param_list)
             self.canvas = plots.all_plots_canvas_creator(self.figure1, self.page_results_1)
         else:
             self.figure1,self.figure2 = plots.create_two_figures(self.list_plots, self.option_plots, self.main_window.corrected_file_df, self.main_window.iso_type_list, self.main_window.std_nbr, self.main_window.inj_per_std, self.main_window.option_name_std_table_dict, self.main_window.calibration_vectors, self.main_window.calibration_param_list)
@@ -1100,7 +1117,7 @@ class page_result_2():
         self.message_text_page_results_2 = tk.Message(master=self.page_results_2, text="Plots of the results",font=("Helvetica Neue", 18), bg="#D11F00", fg="white", relief="ridge", bd=3, width=500)
         self.message_text_page_results_2.place(relx=0.3, rely=0.05, anchor="center")
         self.fig, self.ax = plots.make_raws_plots(self.main_window.protocol_type, self.main_window.result_file_df)
-        self.save_figure(self)
+        self.save_raw_figure()
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.page_results_2)
         self.canvas.draw()
         self.canvas.get_tk_widget().place(relx=0.03, rely=0.1, relheight=0.8, relwidth=0.5)
@@ -1108,19 +1125,22 @@ class page_result_2():
         self.saving_button = tk.Button(self.page_results_2, text="Save data", font=("Helvetica Neue", 18), relief="raised",command=self.saving_folder_window)
         self.saving_button.place(relx=0.74, rely=0.02)
     
-    # saving raw figure (to be tested)
+    # saving raw figure 
 
-    def save_figure(self):
-        pass
-        #if config_file["saving_figure"]==True:
-        #    if config_file["directory_saving_figures"]:
-        #        path=config_file["directory_saving_figures"]
-        #    else:
-        #       directory_path=filedialog.askdirectory()
-        #       path=directory
-        #    filename_raw=os.path.splitext(self.filename)
-        #    if os.path.isfile(Path(os.path.join(path,filename_raw,".png")))==False:
-        #       plt.savefig(self.fig,fname=Path(os.path.join(path,filename_raw,".png")), dpi=1000) 
+    def save_raw_figure(self):
+        figure=self.fig
+        figure.tight_layout()
+        if self.main_window.config_dict["saving_figures"]=="True":
+            if self.main_window.config_dict["directory_saving_figures"]!="":
+                directory_path=self.main_window.config_dict["directory_saving_figures"]
+            else:
+                directory_path=filedialog.askdirectory()
+            if self.main_window.config_dict["extension_figures"]!="":
+                extension_figure=self.main_window.config_dict["extension_figures"]
+            else: 
+                extension_figure=".png"
+            filename_raw=os.path.splitext(self.main_window.filename)[0]   
+            figure.savefig(fname=Path(os.path.join(directory_path,filename_raw+"_raw_plot"+extension_figure)), dpi=100) 
         
     # Verify if a value has not been corrected (due to the lack of at least one of injection in the sample)    
     

@@ -101,10 +101,10 @@ def calibration_curve_plot(isotope_type,measured_vector,true_vector,slope,interc
 
 # Function to create all plots 
 
-def creation_all_plots(list_plots,corrected_file_df,iso_type_list,std_nbr,inj_per_std,option_name_6_dict,calibration_vectors,calibration_param_list,filename,eval_groning):
+def creation_all_plots(list_plots,corrected_file_df,iso_type_list,std_nbr,inj_per_std,option_name_6_dict,calibration_vectors,calibration_param_list):
     rows=std_nbr
     columns=len(iso_type_list)
-    fig,ax=plt.subplots(nrows=rows,ncols=columns)
+    fig,ax=plt.subplots(nrows=rows,ncols=columns,figsize=(9,9))
     fig.subplots_adjust(left=0.1,
                     bottom=0.075, 
                     right=0.95, 
@@ -153,7 +153,7 @@ def other_plots_canvas_creator(figure1,figure2,page_results_1):
 
 def make_raws_plots(protocol_type,final_value_file_df):
     if protocol_type==0 or protocol_type==2:
-        fig,ax=plt.subplots(nrows=6,ncols=1)
+        fig,ax=plt.subplots(nrows=6,ncols=1,figsize=(9,9))
         for axs in ax:
             axs.grid(axis="x",which="major",color="k")
             axs.set_xticks(np.arange(0,max(final_value_file_df.index+1),25))
@@ -184,7 +184,7 @@ def make_raws_plots(protocol_type,final_value_file_df):
         ax[4].set_ylabel("\u03B4D (\u2030)",fontsize=10)
         ax[5].set_ylabel("d-excess (\u2030)",fontsize=10)
     if protocol_type==1 or protocol_type==3:
-        fig,ax=plt.subplots(nrows=9,ncols=1)
+        fig,ax=plt.subplots(nrows=9,ncols=1,figsize=(12,12))
         for axs in ax:
             axs.grid(axis="x",which="major",color="k")
             axs.set_xticks(np.arange(0,max(final_value_file_df.index+1),25))
@@ -210,19 +210,19 @@ def make_raws_plots(protocol_type,final_value_file_df):
         ax[2].set_title("\u03B4\u00B9\u2078O Memory corrected", fontsize=15)
         ax[3].set_title("\u03B4D raw", fontsize=15)
         ax[4].set_title("\u03B4D Memory corrected", fontsize=15)
-        ax[5].set_title("d17O raw",fontsize=15)
-        ax[6].set_title("d17O Memory corrected",fontsize=15)
+        ax[5].set_title("\u03B4\u00B9\u2077O raw",fontsize=15)
+        ax[6].set_title("\u03B4\u00B9\u2077O Memory corrected",fontsize=15)
         ax[7].set_title("d-excess", fontsize=15)
-        ax[8].set_title("17O-excess", fontsize=15)
+        ax[8].set_title("\u00B9\u2077O-excess", fontsize=15)
         ax[0].set_ylabel("Humidity level (ppmv)",fontsize=10)
         ax[1].set_ylabel("\u03B4\u00B9\u2078O (\u2030)",fontsize=10)
         ax[2].set_ylabel("\u03B4\u00B9\u2078O (\u2030)",fontsize=10)
         ax[3].set_ylabel("\u03B4D (\u2030)",fontsize=10)
         ax[4].set_ylabel("\u03B4D (\u2030)",fontsize=10)
-        ax[5].set_ylabel("d17O (\u2030)", fontsize=10)
-        ax[6].set_ylabel("d17O (\u2030)", fontsize=10)
+        ax[5].set_ylabel("\u03B417O (\u2030)", fontsize=10)
+        ax[6].set_ylabel("\u03B417O (\u2030)", fontsize=10)
         ax[7].set_ylabel("d-excess (\u2030)",fontsize=10)
-        ax[8].set_ylabel("17O-excess (\u2030)",fontsize=10)
+        ax[8].set_ylabel("\u00B9\u2077O-excess (\u2030)",fontsize=10)
     return fig,ax
 
 def create_two_figures(list_plots,option_plots,corrected_file_df, iso_type_list, std_nbr, inj_per_std, option_name_6_dict, calibration_vectors, calibration_param_list):

@@ -412,7 +412,10 @@ def save_all_files(page_results_2_class):
         if directory_path=="":
             return
         directory_path=directory_path+"/"
-        directory_path=directory_path
+        if os.path.isfile(Path(os.path.join(directory_path,filename+"_final_file"+save_extension))) or os.path.isfile(Path(os.path.join(directory_path,filename+"_control_samples_results"+save_extension))) or os.path.isfile(Path(os.path.join(directory_path,filename+"_spl_results"+save_extension))) or os.path.isfile(Path(os.path.join(directory_path,filename+"_std_parameters"+save_extension))):
+            continue_saving=tk.messagebox.askokcancel("Warning", "The files already exists, do you want to overwrite them ?",parent=page_results_2)
+            if continue_saving==False:
+                return
         saved=1
     if saving_place=="drive":
         directory_path="./files/saving_temp/"

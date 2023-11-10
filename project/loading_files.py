@@ -140,12 +140,12 @@ def downloading_file(option_protocol1,entry_1_1):
             return
     return filename 
 
-# Function to load file (must be done before proceeding if spy samples are included )
+# Function to load file (must be done before processing if spy samples are included )
 
 def loading_file(option_protocol1,entry_1_1):
     """
     Download file and then import it in DataFrame. 
-    This function is used for spy samples if there are (see two functions above). 
+    This function is used for spy samples if there are. 
 
     Parameters
     ----------
@@ -158,8 +158,8 @@ def loading_file(option_protocol1,entry_1_1):
     -------
     port_list : list
         List of column "Port" extracted from result_file_df
-    result_file_df : pandas.DataFrame
-        DataFrame from the input file 
+    filename : str
+        Name of the input file. (without extension)
 
     """
     filename=downloading_file(option_protocol1,entry_1_1)
@@ -169,4 +169,4 @@ def loading_file(option_protocol1,entry_1_1):
     for i in range(1,len(port_temp)):
         if port_temp[i]!=port_list[-1]:
             port_list.append(port_temp[i])
-    return port_list,result_file_df, filename
+    return port_list, filename
