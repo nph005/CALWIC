@@ -101,7 +101,7 @@ def calibration_curve_plot(isotope_type,measured_vector,true_vector,slope,interc
 
 # Function to create all plots 
 
-def creation_all_plots(list_plots,corrected_file_df,iso_type_list,std_nbr,inj_per_std,option_name_6_dict,calibration_vectors,calibration_param_list):
+def creation_all_plots(list_plots,corrected_file_df,iso_type_list,std_nbr,inj_per_std,option_name_6_dict,calibration_vectors,calibration_param_list,filename,eval_groning):
     rows=std_nbr
     columns=len(iso_type_list)
     fig,ax=plt.subplots(nrows=rows,ncols=columns)
@@ -116,6 +116,7 @@ def creation_all_plots(list_plots,corrected_file_df,iso_type_list,std_nbr,inj_pe
             ax[j][i]=memory_correction_plot(iso_type, j+1, corrected_file_df, std_nbr, inj_per_std, option_name_6_dict,ax[j][i])
     for i,iso_type in enumerate(iso_type_list):
          ax[-1][i]=calibration_curve_plot(iso_type,calibration_vectors[0][i],calibration_vectors[1][i],calibration_param_list[0][i],calibration_param_list[1][i],ax[-1][i])
+    
     return fig,ax
 
 # Function that defines the possible plots to make (page1) 
@@ -137,7 +138,7 @@ def all_plots_canvas_creator(figure,page_results_1):
     canvas.get_tk_widget().place(relx=0.03,rely=0.15,relheight=0.75,relwidth=0.5)
     return canvas
 
-# Function that create canvas when one plot is activated (page1)
+# Function that create canvas when one other plot is activated (page1)
 
 def other_plots_canvas_creator(figure1,figure2,page_results_1):
     canvas1=FigureCanvasTkAgg(figure1,master=page_results_1)

@@ -19,6 +19,10 @@ import tkinter as tk
 import google_api as gapi
 import shutil as stl
 import os
+from pathlib import Path
+import Initialisation
+
+config_dict=Initialisation.read_config_file()
 
 # Function to load standards values 
 
@@ -34,7 +38,7 @@ def load_standard_csv_file():
         List of the names of standards 
 
     """
-    std_values_file=pd.read_csv("./files/std_values.csv",sep=None,engine="python")
+    std_values_file=pd.read_csv(Path("./files/std_values.csv"),sep=None,engine="python")
     std_short_names_list=std_values_file[std_values_file.columns[1]].tolist()
     return std_values_file,std_short_names_list
 
@@ -51,7 +55,7 @@ def load_groning_params_file():
     instruments_names_list : list
         List of the names of instruments 
     """
-    groning_params_file=pd.read_csv("./files/groning_exp_parameters.csv",sep=None,engine="python")
+    groning_params_file=pd.read_csv(Path("./files/groning_exp_parameters.csv"),sep=None,engine="python")
     instruments_names_list=groning_params_file[groning_params_file.columns[0]].tolist()
     return groning_params_file,instruments_names_list
 
@@ -84,15 +88,14 @@ def load_csv_file_into_DF(filename,std_nbr,inj_per_std,spl_nbr,inj_per_spl):
         Total number of injections of samples
 
     """
-    result_file_df=pd.read_csv("./files/raw_files_temp/"+filename+".csv",sep=None,skipinitialspace=True,engine="python")
+    result_file_df=pd.read_csv(Path(os.path.join("./files/raw_files_temp/",filename+".csv")),sep=None,skipinitialspace=True,engine="python")
     result_file_df=result_file_df.rename(columns={"d(18_16)Mean":"raw_value_d18O","d(D_H)Mean":"raw_value_dD"})
     if "d(17_16)Mean" in result_file_df.columns:
         result_file_df=result_file_df.rename(columns={"d(17_16)Mean":"raw_value_d17O"})   
     len_std_injections=std_nbr*inj_per_std
     len_spl_injections=spl_nbr*inj_per_spl
     return result_file_df,len_std_injections,len_spl_injections
-
-
+            
 # Downloading file into a temporary file
 
 def downloading_file(option_protocol1,entry_1_1): 
@@ -114,18 +117,23 @@ def downloading_file(option_protocol1,entry_1_1):
 
     """
     filename=entry_1_1.get()
-    files=os.listdir('./files/raw_files_temp')
+    files=os.listdir(Path('./files/raw_files_temp'))
     if filename+".csv" in files:
         return filename
-    if option_protocol1.get()=="Local directory":
-        filepath=filedialog.askopenfilename()(initialdir=os.path.expanduser("~"))
-        filepath_splitted=os.path.split(filepath)
-        directory_file=filepath_splitted[0]
-        filename_long=filepath[1].repartition(".csv")
-        filename=filename_long[0]
-        dest="./files/raw_files_temp/"+filename+".csv"
-        stl.copyfile(directory_file+"/"+filename+".csv",dest)
-    if option_protocol1.get()=="Google drive":
+    if option_protocol1.get()=="Local_directory":
+       default_path=""
+       if os.path.isdir(Path(config_dict["directory_input_files"]))==True:
+           default_path=Path(config_dict["directory_input_files"])
+       filepath = filedialog.askopenfilename(initialdir=default_path)
+       if filepath=="":
+           return
+       filepath_splitted = os.path.split(filepath)
+       directory_file = filepath_splitted[0]
+       filename_long = filepath_splitted[1].rpartition(".")
+       filename = filename_long[0]
+       dest = Path(os.path.join("./files/raw_files_temp/",filename+".csv"))
+       stl.copyfile(Path(os.path.join(directory_file,filename+".csv")), dest)
+    if option_protocol1.get()=="Google_drive":
         error=gapi.download(filename)
         if error==1:
             tk.messagebox.showwarning("Warning","File not found in drive !!")
@@ -155,10 +163,10 @@ def loading_file(option_protocol1,entry_1_1):
 
     """
     filename=downloading_file(option_protocol1,entry_1_1)
-    result_file_df=pd.read_csv("./files/raw_files_temp/"+filename+".csv",sep=None,skipinitialspace=True,engine="python")
+    result_file_df=pd.read_csv(Path(os.path.join("./files/raw_files_temp/",filename+".csv")),sep=None,skipinitialspace=True,engine="python")
     port_temp=result_file_df["Port"].tolist()
     port_list=[port_temp[0]]
     for i in range(1,len(port_temp)):
         if port_temp[i]!=port_list[-1]:
             port_list.append(port_temp[i])
-    return port_list,result_file_df
+    return port_list,result_file_df, filename

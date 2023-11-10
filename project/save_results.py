@@ -20,9 +20,14 @@ from tkinter import filedialog
 from scipy import signal 
 import os
 import google_api
+import Initialisation
+from pathlib import Path
 
 
 save_extension=".txt"
+config_dict=Initialisation.read_config_file()
+if config_dict["extension_output_files"]!="":
+    save_extension=config_dict["extension_output_files"]
 
 # Function to save standard's parameters in a csv
 
@@ -210,8 +215,9 @@ def save_std_parameters_file(calibration_param_list,inj_per_std,std_uncheck,fina
         column6=np.reshape(column6,(len(column6),1))
         concat=np.concatenate((column1,column2,column3,column4,column5,column6),axis=1)
         df_tosave=pd.DataFrame(data=concat,columns=["col1","col2","col3","col4","col5","col6"])   
-    df_tosave.to_csv(directory_path+filename+"_std_parameters"+save_extension,index=False,sep=",")
+    df_tosave.to_csv(Path(os.path.join(directory_path,filename+"_std_parameters"+save_extension)),index=False,sep=",")
     return
+
 # Function to save samples results in a csv file 
 
 def save_sample_results_file(spl_results,filename,protocol_type,directory_path):
@@ -250,7 +256,7 @@ def save_sample_results_file(spl_results,filename,protocol_type,directory_path):
         if protocol_type==1 or protocol_type==3:
             if df_tosave["std_dev_d17O"].iloc[i]>0.1:
                 df_tosave["Flag"].iloc[i]=1 
-    df_tosave.to_csv(directory_path+filename+"_spl_results"+save_extension,index=False,sep=",")
+    df_tosave.to_csv(Path(os.path.join(directory_path,filename+"_spl_results"+save_extension)),index=False,sep=",")
     return 
 
 # Function to save control samples in a csv file 
@@ -296,7 +302,7 @@ def save_control_spl_file(known_sample_results,known_values,filename,protocol_ty
             residuals3=round(residuals3,2)
             data_understood_pd.append([known_sample_results[0][i],known_sample_results[1][i],known_sample_results[2][i],known_values[i,0],residuals,known_sample_results[1][i],known_sample_results[4][i],known_values[i,1],residuals2,known_sample_results[1][i],known_sample_results[6][i],known_values[i,2],residuals3])
         df_tosave=pd.DataFrame(data=data_understood_pd,columns=["vials d18O","measured d18O","True d18O","residuals d18O","vials dD","measured dD","True dD","residuals dD","vials d17O","measured d17O","True d17O","residuals d17O"])    
-    df_tosave.to_csv(directory_path+filename+"_control_samples_results"+save_extension,index=False,sep=",")
+    df_tosave.to_csv(Path(os.path.join(directory_path,filename+"_control_samples_results"+save_extension)),index=False,sep=",")
     return
 
 def save_result_file(final_value_file_df,filename,directory_path):
@@ -317,7 +323,7 @@ def save_result_file(final_value_file_df,filename,directory_path):
     None. Only save the result file 
 
     """
-    final_value_file_df.to_csv(directory_path+filename+"_final_file"+save_extension,index=False,sep=",")
+    final_value_file_df.to_csv(Path(os.path.join(directory_path,filename+"_final_file"+save_extension)),index=False,sep=",")
     return 
 
 
@@ -399,8 +405,14 @@ def save_all_files(page_results_2_class):
     saving_place = page_results_2_class.saving_place
     
     if saving_place=="local":
-        directory_path=filedialog.askdirectory(parent=page_results_2)
+        default_path=""
+        if config_dict["directory_saving_files"]!="":
+            default_path=config_dict["directory_saving_files"]
+        directory_path=filedialog.askdirectory(parent=page_results_2,initialdir=Path(default_path))
+        if directory_path=="":
+            return
         directory_path=directory_path+"/"
+        directory_path=directory_path
         saved=1
     if saving_place=="drive":
         directory_path="./files/saving_temp/"
@@ -415,9 +427,9 @@ def save_all_files(page_results_2_class):
         if protocol_type==2 or protocol_type==3:
             save_std_parameters_file(calibration_param_list, inj_per_std, std_uncheck, final_value_file_df, operator_id, processor_id, std_nbr, starting_index_std, residuals_std, std_values, protocol_type, filename, directory_path, option_protocol,single_factor_mean=single_factor_mean,exp_params=exp_params)
         if saving_place=="drive":
-            files_to_upload=os.listdir("./files/saving_temp/")
+            files_to_upload=os.listdir(Path("./files/saving_temp/"))
             for file in files_to_upload:
-                google_api.upload_files("./files/saving_temp", file)
-                os.remove("./files/saving_temp/"+file)
+                google_api.upload_files(Path("./files/saving_temp"), file)
+                os.remove(Path("./files/saving_temp/")+file)
         tk.messagebox.showinfo("Information","Data Saved",parent=page_results_2)
     return

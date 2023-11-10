@@ -14,7 +14,8 @@ You should have received a copy of the GNU General Public License along with ALW
 """
 
 import tkinter as tk 
-# Function which checks if there is format errors in the input from user
+
+# Function to check if there is format errors in the input from user
 
 def check_errors(Main_window):
     error=0
@@ -78,11 +79,11 @@ def check_errors(Main_window):
         error=1
         tk.messagebox.showwarning("Warning", "You entered a negative value in the number of removed injection per sample ! ",parent=Main_window.master_window)
         return error
-    if Main_window.removed_inj_per_spl>Main_window.inj_per_spl:
+    if Main_window.removed_inj_per_spl>=Main_window.inj_per_spl:
         error=1
         tk.messagebox.showwarning("Warning","You can not remove more than you inject :) ",parent=Main_window.master_window)
         return error
-    if Main_window.removed_inj_per_std>Main_window.inj_per_std:
+    if Main_window.removed_inj_per_std>=Main_window.inj_per_std:
         error=1
         tk.messagebox.showwarning("Warning","You can not remove more than you inject :) ",parent=Main_window.master_window)
         return error
@@ -109,7 +110,7 @@ def check_errors(Main_window):
             error=1
             tk.messagebox.showwarning("Warning", "You haven't filled a standard in the standard table ",parent=Main_window.master_window)
             return error
-    if Main_window.option_protocol.get()=="Gröning mode" or Main_window.option_protocol.get()=="Gröning d17O mode":
+    if Main_window.option_protocol.get()=="Gröning_mode" or Main_window.option_protocol.get()=="Gröning_d17O_mode":
         if Main_window.option_name_9.get()=="INSTRUMENT NAME":
             error=1
             tk.messagebox.showwarning("Warning", "You forgot to fill parameters for the exponential correction ",parent=Main_window.master_window)

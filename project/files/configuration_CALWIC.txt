@@ -1,0 +1,28 @@
+This is the configuration for CALWIC. 
+Here you can modify the default values of inputs in CALWIC. 
+You can also use this file to set-up a batch processing. 
+Don't modify this header. Do not modify the name of the parameters. Only modify the values (after "=").  
+Leave a value blank if you don't want to set-up a default value. 
+--------------------------------------------------------------------------------------------------------
+instrument_type=               # Picarro 
+memory_correction_protocol=     # van_Geldern_mode, van_Geldern_d17O_mode, Gröning_mode, Gröning_d17O_mode 
+standard_number=                 # 1 up to 8 
+injection_per_standard=           # 1-inf 
+removed_injection_per_standard=    # less than injection_per_standard
+is_spy_sample=                      # True, False
+spy_sample_number=                   # 1 up to 8 
+sample_number=                        # 1-inf 
+injection_per_sample=                  # 1-inf
+removed_injection_per_sample=           # less than injection_per_sample
+operator_id=                             # text  
+processor_id=                             # text
+is_batch_processing=                       # True, False
+batch_processing_mode=                      # Automatic, Manual
+saving_figures=                              # True, False
+type_directory_input_files=                   # Local_directory, Google_drive
+directory_saving_figures=                      # path 
+directory_saving_files=                         # path
+directory_input_files=                           # path
+raw_value_if_not_corrected=                       # True, False
+extension_output_files=                            # .txt, .csv, .xls, .dat, ...
+ 

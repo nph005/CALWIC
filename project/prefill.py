@@ -16,6 +16,8 @@ You should have received a copy of the GNU General Public License along with ALW
 import loading_files as lf 
 import pandas as pd
 import numpy as np 
+from pathlib import Path 
+import os 
 
 def get_identifiers(option_protocol1, entry_1_1):
     """
@@ -44,7 +46,7 @@ def get_identifiers(option_protocol1, entry_1_1):
 
     """
     filename=lf.downloading_file(option_protocol1, entry_1_1)
-    result_file_df=pd.read_csv("./files/raw_files_temp/"+filename+".csv",sep=None,skipinitialspace=True,engine="python")
+    result_file_df=pd.read_csv(Path(os.path.join("./files/raw_files_temp/",filename+".csv")),sep=None,skipinitialspace=True,engine="python")
     inj_nbr_df=result_file_df["Inj Nr"]
     id2_df=result_file_df["Identifier 2"]
     id1_df=result_file_df["Identifier 1"]

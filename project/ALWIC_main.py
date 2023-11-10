@@ -23,6 +23,8 @@ import os
 import webbrowser
 from tkinter import filedialog
 import shutil as stl
+import matplotlib.pyplot as plt
+from pathlib import Path
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg)
 from functools import partial
 import PIL
@@ -40,6 +42,7 @@ import memory_correction_van_Geldern_method as MC_calc_VG
 import memory_correction_Groning_method as MC_calc_G
 import prefill as pref
 import check_errors
+import Initialisation as init_CALWIC
 
 pd.options.mode.chained_assignment = None
 
@@ -54,7 +57,7 @@ class Main_Window():
         # Master Window definition 
         
         self.master_window = tk.Tk()
-        self.master_window.title("ALWIC-tool")
+        self.master_window.title("CALWIC")
         if platform.system()=="Linux":
             self.master_window.state('normal')
         else:
@@ -64,7 +67,7 @@ class Main_Window():
         
         # Head of window
 
-        self.message_text_1_1 = tk.Message(self.master_window, text="Welcome to ALWIC-tool !",
+        self.message_text_1_1 = tk.Message(self.master_window, text="Welcome to CALWIC !",
                                       font=("Helvetica Neue", 18),  width=500,
                                       bg="#D11F00", fg="white", relief="ridge", bd=3)
         self.message_text_1_1.place(relx=0.5, rely=0.05, anchor="center")
@@ -75,8 +78,8 @@ class Main_Window():
         self.pw1.grid(row=2, column=1)
         self.label_1_1 = tk.Label(self.pw1, text="Protocol to follow :", font=("Helvetica Neue", 15), fg="white", bg="#327D94")
         self.label_1_1.grid(row=1, column=1)
-        self.optionlist = ["van Geldern mode", "van Geldern d17O mode","Gröning mode", "Gröning d17O mode"]
-        self.option_protocol = tk.StringVar(value="van Geldern mode") # change the default protocol here 
+        self.optionlist = ["van_Geldern_mode", "van_Geldern_d17O_mode","Gröning_mode", "Gröning_d17O_mode"]
+        self.option_protocol = tk.StringVar(value="van_Geldern_mode") # change the default protocol here 
         self.optionmenu_1_1 = tk.OptionMenu(self.pw1, self.option_protocol, *self.optionlist,command= lambda _:self.define_groning_parameters_table())
         self.optionmenu_1_1["menu"].configure(font=("Helvetica Neue", 15))
         self.optionmenu_1_1.configure(font=("Helvetica Neue", 15), fg="white", bg="#327D94", activebackground="#327D94", activeforeground="white")
@@ -86,16 +89,21 @@ class Main_Window():
         # Panned window 2 (file directory)
 
         self.pw2 = tk.PanedWindow(self.master_window, orient="vertical", relief="solid", bg="#327D94")
-        self.pw2.grid(row=2, column=1)
+        self.pw2.grid(row=2, column=2)
         self.label_2_1 = tk.Label(self.pw2, text="Choose the type of directory :", font=("Helvetica Neue", 15), bg="#327D94", fg="white")
         self.label_2_1.grid(row=1, column=1 )
-        self.optionlist1 = ["Local directory", "Google drive"]
-        self.option_protocol1 = tk.StringVar(value="Google drive") # Value should not be changed in order to function properly 
-        self.optionmenu_2_1 = tk.OptionMenu(self.pw2, self.option_protocol1, *self.optionlist1, command= lambda _:self.copy_paste_local_dir())
+        self.optionlist1 = ["Local_directory", "Google_drive"]
+        self.option_protocol1 = tk.StringVar(value="Local_directory") 
+        self.optionmenu_2_1 = tk.OptionMenu(self.pw2, self.option_protocol1, *self.optionlist1, command= lambda _:self.hide_show_browse_button())
         self.optionmenu_2_1["menu"].configure(font=("Helvetica Neue", 15))
         self.optionmenu_2_1.configure(font=("Helvetica Neue", 15), fg="white", bg="#327D94", activebackground="#327D94", activeforeground="white")
         self.optionmenu_2_1.grid(row=2, column=1, sticky="NSEW")
+        self.browse_button=tk.Button(self.master_window,text="Browse",font=("Helvetica Neue", 15), fg="white", bg="#327D94", activebackground="#327D94", activeforeground="white",command=self.copy_paste_local_dir)
+        self.browse_button.place(relx=0.4, rely=0.13)
+        if self.option_protocol1.get()!="Local_directory":
+            self.browse_button.place_forget()
         self.pw2.place(relx=0.3, rely=0.15, anchor="center")
+        
                 
         # Panned window 3 (filename)
 
@@ -198,24 +206,61 @@ class Main_Window():
         self.helpmenu.add_command(label='Github', command=self.open_github)
         self.helpmenu.add_command(label="Document", command=self.open_pdf_documentation)
         
+        # Set default settings 
+        
+        self.config_dict=init_CALWIC.read_config_file()
+        self.set_up_default_settings()
+        
         self.master_window.mainloop()
         
 ##################END OF DEFINITION OF MAIN WINDOW'S WIDGETS###################
         
 ##################METHODS USED TO MODIFY MAIN WINDOW###########################
-
+    
+    # Set up default settings using configuration file 
+    
+    def set_up_default_settings(self):
+        
+        #sample
+        self.entry_6_1.insert(0,self.config_dict["sample_number"])
+        self.entry_6_2.insert(0,self.config_dict["injection_per_sample"])
+        self.entry_6_3.insert(0,self.config_dict["removed_injection_per_sample"])
+        
+        #standard
+        self.entry_4_1.insert(0,self.config_dict["standard_number"])
+        self.entry_7_1.insert(0,self.config_dict["injection_per_standard"])
+        self.entry_7_2.insert(0,self.config_dict["removed_injection_per_standard"])
+        
+        #spy sample 
+        if self.config_dict["is_spy_sample"]=="True":
+            self.var_5_1.set(1)
+            self.entry_5_1.insert(0,self.config_dict["spy_sample_number"])
+            
+        #protocol
+        if self.config_dict["memory_correction_protocol"] in self.optionlist:
+            self.option_protocol.set(self.config_dict["memory_correction_protocol"])
+        
+        #directory type 
+        if self.config_dict["type_directory_input_files"] in self.optionlist1:
+            self.option_protocol1.set(self.config_dict["type_directory_input_files"])
+            self.hide_show_browse_button()
+        #IDs
+        self.entry_8_1.insert(0,self.config_dict["operator_id"])
+        self.entry_8_2.insert(0,self.config_dict["processor_id"])
+        return
+    
     # Delete temporary files before quiting the app 
         
     def close_window(self):
         if tk.messagebox.askokcancel("Quit", "Do you want to quit?"):
-            files = os.listdir("./files/raw_files_temp/")
+            files = os.listdir(Path("./files/raw_files_temp/"))
             if files != []:
                 for file in files:
-                    os.remove("./files/raw_files_temp/"+file)
-            files = os.listdir("./files/saving_temp/")
+                    os.remove(Path(os.path.join("./files/raw_files_temp/",file)))
+            files = os.listdir(Path("./files/saving_temp/"))
             if files != []:
                 for file in files:
-                    os.remove("./files/saving_temp/"+file)
+                    os.remove(Path(os.path.join("./files/saving_temp/",file)))
             self.master_window.destroy()
         return
     
@@ -229,19 +274,19 @@ class Main_Window():
 
     def open_pdf_documentation(self):
         # open pdf with default application 
-        os.system("start " + "./files/user_documentation.pdf")
+        os.system("start " + Path("./files/user_documentation.pdf"))
         return
     
     # Function to define parameters for the groning method
 
     def define_groning_parameters_table(self):
-        if self.option_protocol.get()== "van Geldern mode" or self.option_protocol.get()=="van Geldern d17O mode":
+        if self.option_protocol.get()== "van_Geldern_mode" or self.option_protocol.get()=="van_Geldern_d17O_mode":
             try:
                 self.pw9.destroy()
                 self.button_evaluation_groning_params.destroy()
             except AttributeError:
                 self.first_time=1
-        if self.option_protocol.get()=="Gröning mode" or self.option_protocol.get()=="Gröning d17O mode":
+        if self.option_protocol.get()=="Gröning_mode" or self.option_protocol.get()=="Gröning_d17O_mode":
             self.button_evaluation_groning_params=tk.Button(self.master_window,text="Evaluate \n Parameters", command=self.open_evaluate_parameters_page, font=("Helvetica Neue", 15), relief="raised", bg="#056CF2", fg="white")
             self.button_evaluation_groning_params.place(relx=0.65, rely=0.86)
             try:
@@ -259,7 +304,7 @@ class Main_Window():
             self.label_9_4.grid(row=1, column=3, sticky="NSEW")
             self.label_9_5 = tk.Label(self.pw9, text="\u03B4D", bg="#056CF2", fg="white", font=("Helvetica Neue", 11))
             self.label_9_5.grid(row=1, column=4, sticky="NSEW")
-            if self.option_protocol.get()=="Gröning d17O mode":
+            if self.option_protocol.get()=="Gröning_d17O_mode":
                 self.label_9_6=tk.Label(self.pw9, text="\u03B417O", bg="#056CF2", fg="white", font=("Helvetica Neue", 11))
                 self.label_9_6.grid(row=1, column=5, sticky="NSEW")
             self.label_9_1=tk.Label(self.pw9, text="\u03B1", bg="#056CF2", fg="white", font=("Helvetica Neue", 11))
@@ -276,7 +321,7 @@ class Main_Window():
                 self.entry=tk.Text(self.pw9,height=1, width=10,state="disabled")
                 self.entry.grid(row=i+2, column=4, sticky="NSEW")
                 self.groning_params["entry_9_3_"+str(i+2)] = self.entry
-                if self.option_protocol.get()=="Gröning d17O mode":
+                if self.option_protocol.get()=="Gröning_d17O_mode":
                     self.entry=tk.Text(self.pw9,height=1, width=10,state="disabled")
                     self.entry.grid(row=i+2, column=5, sticky="NSEW")
                     self.groning_params["entry_9_4_"+str(i+2)] = self.entry
@@ -307,30 +352,41 @@ class Main_Window():
                     self.groning_params["entry_9_3_"+str(i+2)].delete("1.0", "end")
                     self.groning_params["entry_9_3_"+str(i+2)].insert("1.0",str(self.groning_params_file[self.groning_params_file.columns[m]].iloc[k]))
                     self.groning_params["entry_9_3_"+str(i+2)].config(state="disabled")
-                    if self.option_protocol.get()=="Gröning mode": 
+                    if self.option_protocol.get()=="Gröning_mode": 
                         m=m-3
-                    if self.option_protocol.get()=="Gröning d17O mode":
+                    if self.option_protocol.get()=="Gröning_d17O_mode":
                         m=m+3
-                    if self.option_protocol.get()=="Gröning d17O mode":
+                    if self.option_protocol.get()=="Gröning_d17O_mode":
                         self.groning_params["entry_9_4_"+str(i+2)].config(state="normal")
                         self.groning_params["entry_9_4_"+str(i+2)].delete("1.0", "end")
                         self.groning_params["entry_9_4_"+str(i+2)].insert("1.0",str(self.groning_params_file[self.groning_params_file.columns[m]].iloc[k]))
                         self.groning_params["entry_9_4_"+str(i+2)].config(state="disabled")
                         m=m-6
-                        
     # Function to copy paste the working file into the raw_files_temp directory if local_directory is choosen (aswell as writting the filenaem in entry_3_1)
 
     def copy_paste_local_dir(self):
-        if self.option_protocol1.get() == "Local directory":
-            filepath = filedialog.askopenfilename()
-            filepath_splitted = os.path.split(filepath)
-            directory_file = filepath_splitted[0]
-            filename_long = filepath_splitted[1].rpartition(".")
-            filename = filename_long[0]
-            dest = "./files/raw_files_temp/"+filename+".csv"
-            stl.copyfile(directory_file+"/"+filename+".csv", dest)
-            self.entry_3_1.delete(0, "end")
-            self.entry_3_1.insert(0, filename)
+        default_path=""
+        if os.path.isdir(Path(self.config_dict["directory_input_files"]))==True:
+            default_path=Path(self.config_dict["directory_input_files"])
+        filepath = filedialog.askopenfilename(initialdir=default_path)
+        if filepath=="":
+            return
+        filepath_splitted = os.path.split(filepath)
+        directory_file = filepath_splitted[0]
+        filename_long = filepath_splitted[1].rpartition(".")
+        filename = filename_long[0]
+        dest = Path(os.path.join("./files/raw_files_temp/",filename+".csv"))
+        stl.copyfile(Path(os.path.join(directory_file,filename+".csv")), dest)
+        self.entry_3_1.delete(0, "end")
+        self.entry_3_1.insert(0, filename)
+                    
+    # Function to hide or show the browse button 
+    
+    def hide_show_browse_button(self):
+        if self.option_protocol1.get()=="Local_directory":
+            self.browse_button.place(relx=0.4, rely=0.13)
+        else:
+            self.browse_button.place_forget()
                         
     # Function to set some entries used in prefill 
 
@@ -411,7 +467,7 @@ class Main_Window():
         self.label_10_5 = tk.Label(self.pw10, text="\u03B4D",
                              bg="#056CF2", fg="white", font=("Helvetica Neue", 11))
         self.label_10_5.grid(row=1, column=5, sticky="NSEW")
-        if self.option_protocol.get() == "van Geldern d17O mode" or self.option_protocol.get() == "Gröning d17O mode":
+        if self.option_protocol.get() == "van_Geldern_d17O_mode" or self.option_protocol.get() == "Gröning_d17O_mode":
             self.label_10_10 = tk.Label(self.pw10, text="\u03B417O", bg="#056CF2", fg="white", font=("Helvetica Neue", 11))
             self.label_10_10.grid(row=1, column=6, sticky="NSEW") 
             
@@ -435,7 +491,7 @@ class Main_Window():
             self.entry.grid(row=i+2, column=5, sticky="NSEW")
             self.entry.config(state="disabled")
             self.entry_std_table_dict["entry_10_"+str(3*i+2)] = self.entry
-            if self.option_protocol.get() == "van Geldern d17O mode" or self.option_protocol.get()=="Gröning d17O mode":
+            if self.option_protocol.get() == "van_Geldern_d17O_mode" or self.option_protocol.get()=="Gröning_d17O_mode":
                 self.entry = tk.Text(self.pw10, height=1, width=10)
                 self.entry.grid(row=i+2, column=6, sticky="NSEW")
                 self.entry.config(state="disabled")
@@ -466,7 +522,7 @@ class Main_Window():
                 self.entry_std_table_dict["entry_10_"+str(3*i+2)].delete("1.0", "end")
                 self.entry_std_table_dict["entry_10_"+str(3*i+2)].insert("1.0", str(self.std_values_file["dD"].iloc[k]))
                 self.entry_std_table_dict["entry_10_"+str(3*i+2)].config(state="disabled")
-                if self.option_protocol.get() == 'van Geldern d17O mode' or self.option_protocol.get()=="Gröning d17O mode":
+                if self.option_protocol.get() == 'van_Geldern_d17O_mode' or self.option_protocol.get()=="Gröning_d17O_mode":
                     self.entry_std_table_dict["entry_10_"+str(3*(i+1))].config(state="normal")
                     self.entry_std_table_dict["entry_10_"+str(3*(i+1))].delete("1.0", "end")
                     self.entry_std_table_dict["entry_10_"+str(3*(i+1))].insert("1.0", str(self.std_values_file["d17O"].iloc[k]))
@@ -476,7 +532,9 @@ class Main_Window():
     # Function to define the spy samples values table
     
     def define_known_sample_table(self):
-        self.port_list, self.result_file_df = lf.loading_file(self.option_protocol1, self.entry_3_1)
+        self.port_list, self.result_file_df, self.filename = lf.loading_file(self.option_protocol1, self.entry_3_1)
+        self.entry_3_1.delete(0, "end")
+        self.entry_3_1.insert(0, self.filename)
         self.known_sample_nbr = self.entry_5_1.get()
         if self.known_sample_nbr.isdigit() == False:
             tk.messagebox.showwarning("Warning", "You entered a non-authorized value !")
@@ -495,7 +553,7 @@ class Main_Window():
         self.label_11_4.grid(row=1, column=4, sticky="NSEW")
         self.label_11_5 = tk.Label(self.pw11, text="\u03B4D", bg="#056CF2", fg="white", font=("Helvetica Neue", 11))
         self.label_11_5.grid(row=1, column=5, sticky="NSEW")
-        if self.option_protocol.get() == "van Geldern d17O mode" or self.option_protocol.get()=="Gröning d17O mode":
+        if self.option_protocol.get() == "van_Geldern_d17O_mode" or self.option_protocol.get()=="Gröning_d17O_mode":
             self.label_11_6 = tk.Label(self.pw11, text="d17O", bg="#056CF2", fg="white", font=("Helvetica Neue", 11))
             self.label_11_6.grid(row=1, column=6, sticky="NSEW")
         
@@ -528,7 +586,7 @@ class Main_Window():
             self.option_port_menu.config(bg="#056CF2", activebackground="#056CF2",bd=0, fg="white", font=("Helvetica Neue", 10))
             self.option_port_menu.grid(row=i+2, column=2)
             self.option_port_menu_spy_table_dict["option_port_menu_11_"+str(i+1)] = self.option_port_menu
-            if self.option_protocol.get() == "van Geldern d17O mode" or self.option_protocol.get()=="Gröning d17O mode":
+            if self.option_protocol.get() == "van_Geldern_d17O_mode" or self.option_protocol.get()=="Gröning_d17O_mode":
                 self.entry = tk.Text(self.pw11, height=1, width=10)
                 self.entry.grid(row=i+2, column=6, sticky="NSEW")
                 self.entry.config(state="disabled")
@@ -553,7 +611,7 @@ class Main_Window():
                 self.entry_spy_table_dict["entry_11_"+str(3*i+2)].delete("1.0", "end")
                 self.entry_spy_table_dict["entry_11_"+str(3*i+2)].insert("1.0", str(self.std_values_file["dD"].iloc[k]))
                 self.entry_spy_table_dict["entry_11_"+str(3*i+2)].config(state="disabled")
-                if self.option_protocol.get() == 'van Geldern d17O mode' or self.option_protocol.get()=="Gröning d17O mode":
+                if self.option_protocol.get() == 'van_Geldern_d17O_mode' or self.option_protocol.get()=="Gröning_d17O_mode":
                     self.entry_spy_table_dict["entry_11_"+str(3*(i+1))].config(state="normal")
                     self.entry_spy_table_dict["entry_11_"+str(3*(i+1))].delete("1.0", "end")
                     self.entry_spy_table_dict["entry_11_"+str(3*(i+1))].insert("1.0", str(self.std_values_file["d17O"].iloc[k]))
@@ -569,7 +627,7 @@ class Main_Window():
         if self.error_user_inputs==1:
             return
         self.init_variables_processing()
-        if self.option_protocol.get() == "van Geldern mode":
+        if self.option_protocol.get() == "van_Geldern_mode":
             self.protocol_type = 0
             outliers_top_lvl=outliers_top_level(self)
             self.idx_std_to_use=outliers_top_lvl.idx_std_to_use
@@ -580,7 +638,7 @@ class Main_Window():
             self.final_value_file_df,self.calibration_param_list,self.calibration_vectors=cal.wrapper_calibration(self.corrected_file_df, self.iso_type_list, self.std_idx_norm, self.std_values, self.inj_per_std, self.result_file_df, self.removed_inj_per_std,self.std_nbr,self.protocol_type)
             self.slope_MC_list, self.p_values_MC_list, self.avg_std_list, self.std_dev_std_list, self.std_col1_list, self.residuals_std, self.std_uncheck, self.spl_results, self.known_sample_results=param_calc.wrapper_parameters_calculation(self.final_value_file_df, self.protocol_type, self.removed_inj_per_std, self.std_nbr, self.inj_per_std, self.iso_type_list, self.is_residuals_results_table, self.is_spy_results_table, self.var_checkbox_std_table_dict, self.std_values, self.removed_inj_per_spl, self.spl_nbr, self.inj_per_spl, self.len_std_injections, self.port_known_samples_list, self.idx_known_sample,self.std_idx_norm)
             self.change_page_result()
-        if self.option_protocol.get() == "van Geldern d17O mode":
+        if self.option_protocol.get() == "van_Geldern_d17O_mode":
             self.protocol_type = 1
             outliers_top_lvl=outliers_top_level(self)
             self.idx_std_to_use=outliers_top_lvl.idx_std_to_use
@@ -591,13 +649,13 @@ class Main_Window():
             self.final_value_file_df,self.calibration_param_list,self.calibration_vectors=cal.wrapper_calibration(self.corrected_file_df, self.iso_type_list, self.std_idx_norm, self.std_values, self.inj_per_std, self.result_file_df, self.removed_inj_per_std,self.std_nbr,self.protocol_type)
             self.slope_MC_list, self.p_values_MC_list, self.avg_std_list, self.std_dev_std_list, self.std_col1_list, self.residuals_std, self.std_uncheck, self.spl_results, self.known_sample_results=param_calc.wrapper_parameters_calculation(self.final_value_file_df, self.protocol_type, self.removed_inj_per_std, self.std_nbr, self.inj_per_std, self.iso_type_list, self.is_residuals_results_table, self.is_spy_results_table, self.var_checkbox_std_table_dict, self.std_values, self.removed_inj_per_spl, self.spl_nbr, self.inj_per_spl, self.len_std_injections, self.port_known_samples_list, self.idx_known_sample,self.std_idx_norm)
             self.change_page_result()
-        if self.option_protocol.get() == "Gröning mode":
+        if self.option_protocol.get() == "Gröning_mode":
             self.protocol_type=2
             self.corrected_file_df,self.single_factor_mean,self.exp_params=MC_calc_G.wrapper_memory_correction_groning_method(self.iso_type_list, self.result_file_df, self.len_std_injections, self.groning_params_array, self.inj_per_std)
             self.final_value_file_df,self.calibration_param_list,self.calibration_vectors=cal.wrapper_calibration(self.corrected_file_df, self.iso_type_list, self.std_idx_norm, self.std_values, self.inj_per_std, self.result_file_df, self.removed_inj_per_std,self.std_nbr,self.protocol_type)
             self.slope_MC_list, self.p_values_MC_list, self.avg_std_list, self.std_dev_std_list, self.std_col1_list, self.residuals_std, self.std_uncheck, self.spl_results, self.known_sample_results=param_calc.wrapper_parameters_calculation(self.final_value_file_df, self.protocol_type, self.removed_inj_per_std, self.std_nbr, self.inj_per_std, self.iso_type_list, self.is_residuals_results_table, self.is_spy_results_table, self.var_checkbox_std_table_dict, self.std_values, self.removed_inj_per_spl, self.spl_nbr, self.inj_per_spl, self.len_std_injections, self.port_known_samples_list, self.idx_known_sample,self.std_idx_norm)
             self.change_page_result()
-        if self.option_protocol.get() == "Gröning d17O mode":
+        if self.option_protocol.get() == "Gröning_d17O_mode":
             self.protocol_type=3
             self.corrected_file_df,self.single_factor_mean,self.exp_params=MC_calc_G.wrapper_memory_correction_groning_method(self.iso_type_list, self.result_file_df, self.len_std_injections, self.groning_params_array, self.inj_per_std)
             self.final_value_file_df,self.calibration_param_list,self.calibration_vectors=cal.wrapper_calibration(self.corrected_file_df, self.iso_type_list, self.std_idx_norm, self.std_values, self.inj_per_std, self.result_file_df, self.removed_inj_per_std,self.std_nbr,self.protocol_type)
@@ -609,9 +667,8 @@ class Main_Window():
     def init_variables_processing(self):
         self.get_index_std_normalisation()
         self.filename = lf.downloading_file(self.option_protocol1, self.entry_3_1)
-       
         self.iso_type_list=["d18O","dD"]
-        if self.option_protocol.get()=="van Geldern d17O mode" or self.option_protocol.get()=="Gröning d17O mode":
+        if self.option_protocol.get()=="van_Geldern_d17O_mode" or self.option_protocol.get()=="Gröning_d17O_mode":
             self.iso_type_list.append("d17O")
         self.iso_nbr=len(self.iso_type_list)
         self.is_residuals_results_table, self.is_spy_results_table = table_res_1.is_spy_and_is_residuals( self.var_checkbox_std_table_dict, self.var_5_1)
@@ -671,7 +728,7 @@ class Main_Window():
                 if self.iso_nbr == 3:
                     self.known_values[i, 2] = float(self.entry_spy_table_dict["entry_11_"+str(3*(i+1))].get("1.0", "end"))
             self.get_lines_known_samples() 
-        if self.option_protocol.get() == "Gröning mode" or self.option_protocol.get() == "Gröning d17O mode":
+        if self.option_protocol.get() == "Gröning_mode" or self.option_protocol.get() == "Gröning_d17O_mode":
             self.groning_params_array=np.zeros((3,self.iso_nbr))
             for i in range(0,3):
                 self.groning_params_array[i,0]=float(self.groning_params["entry_9_2_"+str(i+2)].get("1.0", "end"))
@@ -724,7 +781,7 @@ class evaluate_parameters_page():
         self.label_eval_4.grid(row=1, column=3, sticky="NSEW")
         self.label_eval_5 = tk.Label(self.pw_eval, text="\u03B4D", bg="#056CF2", fg="white", font=("Helvetica Neue", 11))
         self.label_eval_5.grid(row=1, column=4, sticky="NSEW")
-        if self.main_window.option_protocol.get()=="Gröning d17O mode":
+        if self.main_window.option_protocol.get()=="Gröning_d17O_mode":
             self.label_eval_6=tk.Label(self.pw_eval, text="\u03B417O", bg="#056CF2", fg="white", font=("Helvetica Neue", 11))
             self.label_eval_6.grid(row=1, column=5, sticky="NSEW")
         self.label_eval_1=tk.Label(self.pw_eval, text="\u03B1", bg="#056CF2", fg="white", font=("Helvetica Neue", 11))
@@ -745,7 +802,7 @@ class evaluate_parameters_page():
             self.groning_params_eval["entry_eval_3_"+str(i+2)] = self.entry
             self.groning_params_eval["entry_eval_3_"+str(i+2)].delete(0, "end")
             self.groning_params_eval["entry_eval_3_"+str(i+2)].insert(0, self.main_window.groning_params["entry_9_3_"+str(i+2)].get("1.0","end"))
-            if self.main_window.option_protocol.get()=="Gröning d17O mode":
+            if self.main_window.option_protocol.get()=="Gröning_d17O_mode":
                 self.entry=tk.Entry(self.pw_eval, width=12)
                 self.entry.grid(row=i+2, column=5, sticky="NSEW")
                 self.groning_params_eval["entry_eval_4_"+str(i+2)] = self.entry
@@ -770,9 +827,9 @@ class evaluate_parameters_page():
             if self.groning_params_eval[j].get()=="":
                 tk.messagebox.showerror("Error","Error : One of the Entry is blank, please fill it",parent=self.page_evaluation_groning_params)
                 return
-        if self.main_window.option_protocol.get() == "Gröning mode" or self.main_window.option_protocol.get() == "Gröning d17O mode":
+        if self.main_window.option_protocol.get() == "Gröning_mode" or self.main_window.option_protocol.get() == "Gröning_d17O_mode":
             self.iso_nbr=2
-            if self.main_window.option_protocol.get()=="Gröning d17O mode":
+            if self.main_window.option_protocol.get()=="Gröning_d17O_mode":
                 self.iso_nbr=3
             self.groning_params_array_eval=np.zeros((3,self.iso_nbr))
             for i in range(0,3):
@@ -786,15 +843,16 @@ class evaluate_parameters_page():
     
     def processing_eval_groning(self):
         self.main_window.init_variables_processing()
-        if self.main_window.option_protocol.get() == "Gröning mode":
+        if self.main_window.option_protocol.get() == "Gröning_mode":
             self.protocol_type=2
-        if self.main_window.option_protocol.get() == "Gröning d17O mode":
+        if self.main_window.option_protocol.get() == "Gröning_d17O_mode":
             self.protocol_type=3   
         self.corrected_file_df,self.single_factor_mean,self.exp_params=MC_calc_G.wrapper_memory_correction_groning_method(self.main_window.iso_type_list, self.main_window.result_file_df, self.main_window.len_std_injections, self.groning_params_array_eval, self.main_window.inj_per_std)
         self.final_value_file_df,self.calibration_param_list,self.calibration_vectors=cal.wrapper_calibration(self.corrected_file_df, self.main_window.iso_type_list, self.main_window.std_idx_norm, self.main_window.std_values, self.main_window.inj_per_std, self.main_window.result_file_df, self.main_window.removed_inj_per_std,self.main_window.std_nbr,self.protocol_type)
         self.slope_MC_list, self.p_values_MC_list, self.avg_std_list, self.std_dev_std_list, self.std_col1_list, self.residuals_std, self.std_uncheck, self.spl_results, self.known_sample_results=param_calc.wrapper_parameters_calculation(self.final_value_file_df, self.protocol_type, self.main_window.removed_inj_per_std, self.main_window.std_nbr, self.main_window.inj_per_std, self.main_window.iso_type_list,self.main_window.is_residuals_results_table, self.main_window.is_spy_results_table, self.main_window.var_checkbox_std_table_dict, self.main_window.std_values, self.main_window.removed_inj_per_spl, self.main_window.spl_nbr, self.main_window.inj_per_spl, self.main_window.len_std_injections, self.main_window.port_known_samples_list, self.main_window.idx_known_sample,self.main_window.std_idx_norm)
         self.list_plots = plots.create_list_plots(self.main_window.std_nbr, self.protocol_type,self.main_window.iso_type_list)
-        self.fig, ax = plots.creation_all_plots(self.list_plots, self.corrected_file_df,self.main_window.iso_type_list, self.main_window.std_nbr, self.main_window.inj_per_std, self.main_window.option_name_std_table_dict, self.calibration_vectors, self.calibration_param_list)
+        self.eval_groning=True
+        self.fig, ax = plots.creation_all_plots(self.list_plots, self.corrected_file_df,self.main_window.iso_type_list, self.main_window.std_nbr, self.main_window.inj_per_std, self.main_window.option_name_std_table_dict, self.calibration_vectors, self.calibration_param_list,self.main_window.filename,self.eval_groning)
         self.canvas = plots.all_plots_canvas_creator(self.fig,  self.page_evaluation_groning_params)
    
     # Function to save groning parameters into the file
@@ -820,7 +878,7 @@ class evaluate_parameters_page():
             for i in range(0,3):
                 list_to_save.append(np.nan)
         self.main_window.groning_params_file.loc[-1]=list_to_save
-        self.main_window.groning_params_file.to_csv("./files/groning_exp_parameters.csv",sep=",",index=False)
+        self.main_window.groning_params_file.to_csv(Path("./files/groning_exp_parameters.csv"),sep=",",index=False)
         tk.messagebox.showinfo("Info", "Parameters saved",parent=self.page_evaluation_groning_params)
         
         
@@ -978,7 +1036,7 @@ class page_result_1():
         self.message_text_page_results_1 = tk.Message(master=self.page_results_1, text="Plots of the results", font=("Helvetica Neue", 18), bg="#D11F00", fg="white", relief="ridge", bd=3, width=500)
         self.message_text_page_results_1.place(relx=0.3, rely=0.1, anchor="center")
         self.list_plots = plots.create_list_plots(self.main_window.std_nbr, self.main_window.protocol_type,self.main_window.iso_type_list)
-        self.fig, self.ax = plots.creation_all_plots(self.list_plots, self.main_window.corrected_file_df, self.main_window.iso_type_list, self.main_window.std_nbr, self.main_window.inj_per_std, self.main_window.option_name_std_table_dict, self.main_window.calibration_vectors, self.main_window.calibration_param_list)
+        self.fig, self.ax = plots.creation_all_plots(self.list_plots, self.main_window.corrected_file_df, self.main_window.iso_type_list, self.main_window.std_nbr, self.main_window.inj_per_std, self.main_window.option_name_std_table_dict, self.main_window.calibration_vectors, self.main_window.calibration_param_list,self.main_window.filename,False)
         self.canvas = plots.all_plots_canvas_creator(self.fig, self.page_results_1)
         table_res_1.create_calibration_results_table(self.main_window.calibration_param_list, self.page_results_1, self.main_window.protocol_type, self.main_window.is_residuals_results_table, self.main_window.is_spy_results_table)
         table_res_1.create_MC_results_table(self.main_window.std_col1_list,self.main_window.protocol_type,self.page_results_1,self.main_window.is_residuals_results_table,self.main_window.is_spy_results_table, self.main_window.slope_MC_list, self.main_window.p_values_MC_list, self.main_window.iso_type_list, self.main_window.single_factor_mean, self.main_window.exp_params)
@@ -1006,7 +1064,7 @@ class page_result_1():
         except AttributeError:
             self.doesnt_exits=1
         if self.option_plots.get() == "All plots":
-            self.figure1,self.ax1=plots.creation_all_plots(self.list_plots,  self.main_window.corrected_file_df, self.main_window.iso_type_list, self.main_window.std_nbr, self.main_window.inj_per_std, self.main_window.option_name_std_table_dict, self.main_window.calibration_vectors, self.main_window.calibration_param_list)
+            self.figure1,self.ax1=plots.creation_all_plots(self.list_plots,  self.main_window.corrected_file_df, self.main_window.iso_type_list, self.main_window.std_nbr, self.main_window.inj_per_std, self.main_window.option_name_std_table_dict, self.main_window.calibration_vectors, self.main_window.calibration_param_list,self.main_window.filename,False)
             self.canvas = plots.all_plots_canvas_creator(self.figure1, self.page_results_1)
         else:
             self.figure1,self.figure2 = plots.create_two_figures(self.list_plots, self.option_plots, self.main_window.corrected_file_df, self.main_window.iso_type_list, self.main_window.std_nbr, self.main_window.inj_per_std, self.main_window.option_name_std_table_dict, self.main_window.calibration_vectors, self.main_window.calibration_param_list)
@@ -1042,13 +1100,27 @@ class page_result_2():
         self.message_text_page_results_2 = tk.Message(master=self.page_results_2, text="Plots of the results",font=("Helvetica Neue", 18), bg="#D11F00", fg="white", relief="ridge", bd=3, width=500)
         self.message_text_page_results_2.place(relx=0.3, rely=0.05, anchor="center")
         self.fig, self.ax = plots.make_raws_plots(self.main_window.protocol_type, self.main_window.result_file_df)
+        self.save_figure(self)
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.page_results_2)
         self.canvas.draw()
         self.canvas.get_tk_widget().place(relx=0.03, rely=0.1, relheight=0.8, relwidth=0.5)
         table_res2.create_samples_results_table(self.page_results_2, self.main_window.spl_results, self.main_window.protocol_type)
         self.saving_button = tk.Button(self.page_results_2, text="Save data", font=("Helvetica Neue", 18), relief="raised",command=self.saving_folder_window)
         self.saving_button.place(relx=0.74, rely=0.02)
-        
+    
+    # saving raw figure (to be tested)
+
+    def save_figure(self):
+        pass
+        #if config_file["saving_figure"]==True:
+        #    if config_file["directory_saving_figures"]:
+        #        path=config_file["directory_saving_figures"]
+        #    else:
+        #       directory_path=filedialog.askdirectory()
+        #       path=directory
+        #    filename_raw=os.path.splitext(self.filename)
+        #    if os.path.isfile(Path(os.path.join(path,filename_raw,".png")))==False:
+        #       plt.savefig(self.fig,fname=Path(os.path.join(path,filename_raw,".png")), dpi=1000) 
         
     # Verify if a value has not been corrected (due to the lack of at least one of injection in the sample)    
     
