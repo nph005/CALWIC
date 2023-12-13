@@ -46,7 +46,7 @@ def load_standard_csv_file():
 
 def load_groning_params_file():
     """
-    load groning parameters values from groning.csv
+    load groning parameters values from groning_exp_parameters.csv
 
     Returns
     -------
@@ -58,7 +58,20 @@ def load_groning_params_file():
     groning_params_file=pd.read_csv(Path("./files/groning_exp_parameters.csv"),sep=None,engine="python")
     instruments_names_list=groning_params_file[groning_params_file.columns[0]].tolist()
     return groning_params_file,instruments_names_list
+# Function to load instrument identifier csv file 
 
+def load_instrument_identifier_file():
+    """
+    load instruments names values from instrument_identifier.csv
+
+    Returns
+    -------
+    instrument_identifier_list : list
+        List of identifiers of instruments
+    """
+    instrument_identifier_file=pd.read_csv(Path("./files/instrument_identifier.csv"),sep=",",header=None)
+    instrument_identifier_list=instrument_identifier_file[instrument_identifier_file.columns[0]].tolist()
+    return instrument_identifier_list
 # Function to load the results file and open it as a DataFrame
 
 def load_csv_file_into_DF(filename,std_nbr,inj_per_std,spl_nbr,inj_per_spl):

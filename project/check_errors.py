@@ -14,6 +14,8 @@ You should have received a copy of the GNU General Public License along with ALW
 """
 
 import tkinter as tk 
+from pathlib import Path, PurePath
+import os
 
 # Function to check if there is format errors in the input from user
 
@@ -116,4 +118,9 @@ def check_errors(Main_window):
             tk.messagebox.showwarning("Warning", "You forgot to fill parameters for the exponential correction ",parent=Main_window.master_window)
             return error
     
-            
+def set_working_directory():
+    path_file=Path(__file__).absolute()
+    path_folder=path_file.parent
+    os.chdir(path_folder)
+
+    

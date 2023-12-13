@@ -28,6 +28,8 @@ save_extension=".txt"
 config_dict=Initialisation.read_config_file()
 if config_dict["extension_output_files"]!="":
     save_extension=config_dict["extension_output_files"]
+if config_dict["csv_separator"]!="":
+    separator_csv=config_dict["csv_separator"]
 
 # Function to save standard's parameters in a csv
 
@@ -215,7 +217,7 @@ def save_std_parameters_file(calibration_param_list,inj_per_std,std_uncheck,fina
         column6=np.reshape(column6,(len(column6),1))
         concat=np.concatenate((column1,column2,column3,column4,column5,column6),axis=1)
         df_tosave=pd.DataFrame(data=concat,columns=["col1","col2","col3","col4","col5","col6"])   
-    df_tosave.to_csv(Path(os.path.join(directory_path,filename+"_std_parameters"+save_extension)),index=False,sep=",")
+    df_tosave.to_csv(Path(os.path.join(directory_path,filename+"_std_parameters"+save_extension)),index=False,sep=separator_csv)
     return
 
 # Function to save samples results in a csv file 
@@ -256,7 +258,7 @@ def save_sample_results_file(spl_results,filename,protocol_type,directory_path):
         if protocol_type==1 or protocol_type==3:
             if df_tosave["std_dev_d17O"].iloc[i]>0.1:
                 df_tosave["Flag"].iloc[i]=1 
-    df_tosave.to_csv(Path(os.path.join(directory_path,filename+"_spl_results"+save_extension)),index=False,sep=",")
+    df_tosave.to_csv(Path(os.path.join(directory_path,filename+"_spl_results"+save_extension)),index=False,sep=separator_csv)
     return 
 
 # Function to save control samples in a csv file 
@@ -302,7 +304,7 @@ def save_control_spl_file(known_sample_results,known_values,filename,protocol_ty
             residuals3=round(residuals3,2)
             data_understood_pd.append([known_sample_results[0][i],known_sample_results[1][i],known_sample_results[2][i],known_values[i,0],residuals,known_sample_results[1][i],known_sample_results[4][i],known_values[i,1],residuals2,known_sample_results[1][i],known_sample_results[6][i],known_values[i,2],residuals3])
         df_tosave=pd.DataFrame(data=data_understood_pd,columns=["vials d18O","measured d18O","True d18O","residuals d18O","vials dD","measured dD","True dD","residuals dD","vials d17O","measured d17O","True d17O","residuals d17O"])    
-    df_tosave.to_csv(Path(os.path.join(directory_path,filename+"_control_samples_results"+save_extension)),index=False,sep=",")
+    df_tosave.to_csv(Path(os.path.join(directory_path,filename+"_control_samples_results"+save_extension)),index=False,sep=separator_csv)
     return
 
 def save_result_file(final_value_file_df,filename,directory_path):
@@ -323,7 +325,7 @@ def save_result_file(final_value_file_df,filename,directory_path):
     None. Only save the result file 
 
     """
-    final_value_file_df.to_csv(Path(os.path.join(directory_path,filename+"_final_file"+save_extension)),index=False,sep=",")
+    final_value_file_df.to_csv(Path(os.path.join(directory_path,filename+"_final_file"+save_extension)),index=False,sep=separator_csv)
     return 
 
 
@@ -399,6 +401,7 @@ def save_all_files(page_results_2_class):
     starting_index_std = page_results_2_class.main_window.removed_inj_per_std
     residuals_std = page_results_2_class.main_window.residuals_std
     std_values = page_results_2_class.main_window.std_values
+    instrument_identifier=page_results_2_class.main_window.option_instrument_identifier
     if type(page_results_2_class.main_window.known_sample_results)==list:
         known_sample_results= page_results_2_class.main_window.known_sample_results
         known_values = page_results_2_class.main_window.known_values
@@ -412,17 +415,40 @@ def save_all_files(page_results_2_class):
         if directory_path=="":
             return
         directory_path=directory_path+"/"
-        if os.path.isfile(Path(os.path.join(directory_path,filename+"_final_file"+save_extension))) or os.path.isfile(Path(os.path.join(directory_path,filename+"_control_samples_results"+save_extension))) or os.path.isfile(Path(os.path.join(directory_path,filename+"_spl_results"+save_extension))) or os.path.isfile(Path(os.path.join(directory_path,filename+"_std_parameters"+save_extension))):
-            continue_saving=tk.messagebox.askokcancel("Warning", "The files already exists, do you want to overwrite them ?",parent=page_results_2)
-            if continue_saving==False:
-                return
         saved=1
     if saving_place=="drive":
         directory_path="./files/saving_temp/"
         saved=1
     if saved==1:
+        already_saved_file=False
+        continue_saving=None
+        CALWIC_path="../../CALWIC_files/"
+        with open(Path(CALWIC_path+"already_treated_files.txt"),"a+") as f:
+            f.seek(0)
+            lines=f.readlines()
+            for line in lines: 
+                if filename in line:
+                    already_saved_file=True
+                    continue_saving=tk.messagebox.askokcancel("Warning", "The files already exists, do you want to overwrite them ?",parent=page_results_2)
+                    if continue_saving==False:
+                        return
+            if continue_saving==None:
+                f.seek(0,2)
+                f.write(filename+"\n") 
+        if instrument_identifier!="No instrument identifier" and already_saved_file==False:
+            CALWIC_path="../../CALWIC_files/"
+            is_syringe_file=os.path.isfile(Path(CALWIC_path+instrument_identifier.get()+"_syringe_counter.csv"))
+            if is_syringe_file==True:
+                syringe_file_pd=pd.read_csv(Path(CALWIC_path+instrument_identifier.get()+"_syringe_counter.csv"), sep=None, engine="python")
+                syringe_file_pd["current_syringe"].iloc[0]=syringe_file_pd["current_syringe"].iloc[0]+len(final_value_file_df)
+                syringe_file_pd.to_csv(Path(CALWIC_path+instrument_identifier.get()+"_syringe_counter.csv"),index=False,sep=separator_csv)
+            else:
+                syringe_file_pd=pd.DataFrame(columns=["current_syringe","previous_syringe"],data=[[0,""]])
+                syringe_file_pd["current_syringe"].iloc[0]=syringe_file_pd["current_syringe"].iloc[0]+len(final_value_file_df)
+                syringe_file_pd.to_csv(Path(CALWIC_path+instrument_identifier.get()+"_syringe_counter.csv"),index=False,sep=separator_csv)
+        
         if type(known_sample_results)==list:
-            save_control_spl_file(known_sample_results, known_values, filename,protocol_type,directory_path)
+            save_control_spl_file(known_sample_results, known_values, filename,protocol_type,directory_path) 
         save_result_file(final_value_file_df, filename,directory_path)
         save_sample_results_file(spl_results, filename,protocol_type,directory_path)
         if protocol_type==0 or protocol_type==1:

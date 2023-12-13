@@ -30,6 +30,8 @@ from functools import partial
 import PIL
 
 #import from local files 
+import check_errors
+check_errors.set_working_directory() # insure correct initialisation of paths 
 
 import parameters_calculations as param_calc
 import plots as plots
@@ -41,7 +43,6 @@ import Calibration as cal
 import memory_correction_van_Geldern_method as MC_calc_VG
 import memory_correction_Groning_method as MC_calc_G
 import prefill as pref
-import check_errors
 import Initialisation as init_CALWIC
 
 pd.options.mode.chained_assignment = None
@@ -53,6 +54,7 @@ class Main_Window():
         
         self.std_values_file, self.std_short_names_list = lf.load_standard_csv_file()
         self.groning_params_file,self.instruments_names_list=lf.load_groning_params_file()
+        self.instruments_identifier_list = lf.load_instrument_identifier_file()
         
         # Master Window definition 
         
@@ -192,10 +194,23 @@ class Main_Window():
         self.entry_8_2.grid(row=2, column=2)
         self.pw8.place(relx=0.18, rely=0.9,anchor="center")
         
+        # Instrument Identifier 
+        
+        self.pw12 = tk.PanedWindow(self.master_window, orient="vertical", relief="solid", bg="#17E8C2")
+        self.pw12.grid(row=2, column=2)
+        self.label_12_1 = tk.Label(self.pw12, text= "Instrument Identifier",font=("Helvetica Neue", 14), bg="#17E8C2")
+        self.label_12_1.grid(row=1,column=1)
+        self.option_instrument_identifier=tk.StringVar(value="No instrument identifier")
+        self.option_menu_12_1=tk.OptionMenu(self.pw12,self.option_instrument_identifier, *self.instruments_identifier_list )
+        self.option_menu_12_1["menu"].configure(font=("Helvetica Neue", 15))
+        self.option_menu_12_1.configure(font=("Helvetica Neue", 15), fg="black", bg="#17E8C2", activebackground="#17E8C2", activeforeground="black")
+        self.option_menu_12_1.grid(row=2, column=1, sticky="NSEW")
+        self.pw12.place(relx=0.8, rely=0.64, anchor="center")
+        
         # Processing Button 
 
         self.button_processing = tk.Button(self.master_window, text="Processing", command=self.processing, font=("Helvetica Neue", 18), bg="#FE4000",relief="raised", height=3, width=9, activebackground="#80669d", activeforeground="white")
-        self.button_processing.place(relx=0.8, rely=0.7, anchor="center")
+        self.button_processing.place(relx=0.8, rely=0.8, anchor="center")
         
         # Menu (links to documentation online and offline)
         
@@ -878,7 +893,11 @@ class evaluate_parameters_page():
             for i in range(0,3):
                 list_to_save.append(np.nan)
         self.main_window.groning_params_file.loc[-1]=list_to_save
-        self.main_window.groning_params_file.to_csv(Path("./files/groning_exp_parameters.csv"),sep=",",index=False)
+        separator_csv=","
+        if self.main_window.config_dict["csv_separator"]!="":
+            separator_csv=self.main_window.config_dict["csv_separator"]
+            
+        self.main_window.groning_params_file.to_csv(Path("./files/groning_exp_parameters.csv"),sep=separator_csv,index=False)
         tk.messagebox.showinfo("Info", "Parameters saved",parent=self.page_evaluation_groning_params)
         
         
