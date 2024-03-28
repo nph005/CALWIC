@@ -205,6 +205,7 @@ PyQtWebEngine==5.15.4
 pyrsistent==0.18.0
 PySocks==1.7.1
 pytest==7.1.2
+python-calamine==0.2.0
 python-dateutil==2.8.2
 python-lsp-black==1.2.1
 python-lsp-jsonrpc==1.0.0
@@ -305,6 +306,7 @@ win-inet-pton==1.1.0
 wincertstore==0.2
 wrapt==1.14.1
 xarray==2022.11.0
+xlrd==2.0.1
 xlwings==0.29.1
 yapf==0.31.0
 zict==2.1.0

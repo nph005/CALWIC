@@ -21,6 +21,7 @@ import shutil as stl
 import os
 from pathlib import Path
 import Initialisation
+from python_calamine.pandas import pandas_monkeypatch; pandas_monkeypatch()
 
 config_dict=Initialisation.read_config_file()
 
@@ -101,6 +102,7 @@ def load_csv_file_into_DF(filename,std_nbr,inj_per_std,spl_nbr,inj_per_spl):
         Total number of injections of samples
 
     """
+
     result_file_df=pd.read_csv(Path(os.path.join("./files/raw_files_temp/",filename+".csv")),sep=None,skipinitialspace=True,engine="python")
     result_file_df=result_file_df.rename(columns={"d(18_16)Mean":"raw_value_d18O","d(D_H)Mean":"raw_value_dD"})
     if "d(17_16)Mean" in result_file_df.columns:
@@ -134,18 +136,29 @@ def downloading_file(option_protocol1,entry_1_1):
     if filename+".csv" in files:
         return filename
     if option_protocol1.get()=="Local_directory":
-       default_path=""
-       if os.path.isdir(Path(config_dict["directory_input_files"]))==True:
-           default_path=Path(config_dict["directory_input_files"])
-       filepath = filedialog.askopenfilename(initialdir=default_path)
-       if filepath=="":
-           return
-       filepath_splitted = os.path.split(filepath)
-       directory_file = filepath_splitted[0]
-       filename_long = filepath_splitted[1].rpartition(".")
-       filename = filename_long[0]
-       dest = Path(os.path.join("./files/raw_files_temp/",filename+".csv"))
-       stl.copyfile(Path(os.path.join(directory_file,filename+".csv")), dest)
+        if config_dict["is_batch_processing"]=="True":
+            directory_file=config_dict["directory_input_files"]
+            filename=entry_1_1.get()
+        else:
+           default_path=""
+           if os.path.isdir(Path(config_dict["directory_input_files"]))==True:
+               default_path=Path(config_dict["directory_input_files"])
+           filepath = filedialog.askopenfilename(initialdir=default_path)
+           if filepath=="":
+               return
+           filepath_splitted = os.path.split(filepath)
+           directory_file = filepath_splitted[0]
+           filename_long = filepath_splitted[1].rpartition(".")
+           filename = filename_long[0]
+        if config_dict["extension_input_files"]==".xls" or config_dict["extension_input_files"]==".xlsx" :
+            try:
+                excel=pd.read_excel(Path(os.path.join(directory_file,filename+".xls")),index_col=None)
+                excel.to_csv(Path(os.path.join(directory_file,filename+".csv")),encoding="utf-8")
+            except:
+                excel=pd.read_excel(Path(os.path.join(directory_file,filename+".xlsx")),index_col=None, engine="calamine")
+                excel.to_csv(Path(os.path.join(directory_file,filename+".csv")),encoding="utf-8")
+        dest = Path(os.path.join("./files/raw_files_temp/",filename+".csv"))
+        stl.copyfile(Path(os.path.join(directory_file,filename+".csv")), dest)
     if option_protocol1.get()=="Google_drive":
         error=gapi.download(filename)
         if error==1:
@@ -182,4 +195,4 @@ def loading_file(option_protocol1,entry_1_1):
     for i in range(1,len(port_temp)):
         if port_temp[i]!=port_list[-1]:
             port_list.append(port_temp[i])
-    return port_list, filename
+    return port_list, filename, result_file_df

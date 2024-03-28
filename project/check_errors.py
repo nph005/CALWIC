@@ -16,6 +16,9 @@ You should have received a copy of the GNU General Public License along with ALW
 import tkinter as tk 
 from pathlib import Path, PurePath
 import os
+import Initialisation
+
+config_dict=Initialisation.read_config_file()
 
 # Function to check if there is format errors in the input from user
 
@@ -122,5 +125,19 @@ def set_working_directory():
     path_file=Path(__file__).absolute()
     path_folder=path_file.parent
     os.chdir(path_folder)
-
     
+def check_errors_batch_processing(Main_window): 
+    error=0
+    if config_dict["batch_processing_mode"] in ["Automatic","Manual"]==False:
+        tk.messagebox.showwarning("Warning","invalid batch processing mode, please check the configuration file",parent=Main_window.master_window)
+        error=1
+        return error
+    if os.path.isdir(Path(config_dict["directory_input_files"]))!=True or os.path.isdir(Path(config_dict["directory_saving_files"]))!=True :
+        tk.messagebox.showwarning("Warning", "invalid path for files",parent=Main_window.master_window)
+        error=1
+        return error
+    if config_dict["batch_processing_mode"]=="Automatic":
+        if os.path.isdir(Path(config_dict["directory_saving_figures"]))!=True:
+            tk.messagebox.showwarning("Warning","invalid path for figures",parent=Main_window.master_window)
+            error=1
+            return error

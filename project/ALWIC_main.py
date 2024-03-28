@@ -28,6 +28,7 @@ from pathlib import Path
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg)
 from functools import partial
 import PIL
+import traceback 
 
 #import from local files 
 import check_errors
@@ -250,6 +251,7 @@ class Main_Window():
         if self.config_dict["is_spy_sample"]=="True":
             self.var_5_1.set(1)
             self.entry_5_1.insert(0,self.config_dict["spy_sample_number"])
+            self.define_known_sample_table()
             
         #protocol
         if self.config_dict["memory_correction_protocol"] in self.optionlist:
@@ -259,9 +261,17 @@ class Main_Window():
         if self.config_dict["type_directory_input_files"] in self.optionlist1:
             self.option_protocol1.set(self.config_dict["type_directory_input_files"])
             self.hide_show_browse_button()
+            
         #IDs
         self.entry_8_1.insert(0,self.config_dict["operator_id"])
         self.entry_8_2.insert(0,self.config_dict["processor_id"])
+        
+        #batch processing
+        if self.config_dict["is_batch_processing"]=="True":
+            self.button_processing.destroy()
+            self.button_batch_processing=tk.Button(self.master_window, text="Start \n Batch \n Processing", command=self.batch_processing, font=("Helvetica Neue", 18), bg="#FE4000",relief="raised", height=3, width=9, activebackground="#80669d", activeforeground="white")
+            self.button_batch_processing.place(relx=0.8, rely=0.8, anchor="center")
+            
         return
     
     # Delete temporary files before quiting the app 
@@ -381,7 +391,7 @@ class Main_Window():
 
     def copy_paste_local_dir(self):
         default_path=""
-        if os.path.isdir(Path(self.config_dict["directory_input_files"]))==True:
+        if Path(self.config_dict["directory_input_files"]).exists()==True:
             default_path=Path(self.config_dict["directory_input_files"])
         filepath = filedialog.askopenfilename(initialdir=default_path)
         if filepath=="":
@@ -390,8 +400,10 @@ class Main_Window():
         directory_file = filepath_splitted[0]
         filename_long = filepath_splitted[1].rpartition(".")
         filename = filename_long[0]
-        dest = Path(os.path.join("./files/raw_files_temp/",filename+".csv"))
-        stl.copyfile(Path(os.path.join(directory_file,filename+".csv")), dest)
+        if self.config_dict["extension_input_files"]!="":
+            extension_input_files=self.config_dict["extension_input_files"]
+        dest = Path(os.path.join("./files/raw_files_temp/",filename+extension_input_files))
+        stl.copyfile(Path(os.path.join(directory_file,filename+extension_input_files)), dest)
         self.entry_3_1.delete(0, "end")
         self.entry_3_1.insert(0, filename)
                     
@@ -547,7 +559,7 @@ class Main_Window():
     # Function to define the spy samples values table
     
     def define_known_sample_table(self):
-        self.port_list, self.filename = lf.loading_file(self.option_protocol1, self.entry_3_1)
+        self.port_list, self.filename, self.result_file_df = lf.loading_file(self.option_protocol1, self.entry_3_1)
         self.entry_3_1.delete(0, "end")
         self.entry_3_1.insert(0, self.filename)
         self.known_sample_nbr = self.entry_5_1.get()
@@ -635,13 +647,139 @@ class Main_Window():
 
 ##################METHODS USED FOR PROCESSING##################################
     
+    # Function to start batch processing 
+    
+    def batch_processing(self):
+        error=check_errors.check_errors_batch_processing(self)
+        if error==1:
+            return 
+        if self.config_dict["batch_processing_mode"]=="Automatic":
+            self.config_dict["saving_figures"]="True"
+            list_files=[]
+            for file in (Path(self.config_dict["directory_input_files"])).iterdir():
+                list_files.append(Path(file).stem)
+            try :
+                for i in range(0,len(list_files)):
+                    self.entry_3_1.delete(0,"end")
+                    self.entry_3_1.insert(0,list_files[i])
+                    error=self.init_variables_processing()
+                    if error==1:
+                        return
+                    self.idx_std_to_use=np.arange(self.std_nbr*self.inj_per_std)
+                    if self.option_protocol.get() == "van_Geldern_mode":
+                        self.protocol_type = 0
+                        self.MC_one = np.ones((self.inj_per_std))
+                        self.last_injections=MC_calc_VG.create_last_injections(self.result_file_df, self.iso_type_list)
+                        self.corrected_file_df,self.MCs=MC_calc_VG.wrapper_memory_coefficient_van_geldern(self.iso_type_list, self.MC_one, self.inj_per_std, self.last_injections, self.result_file_df, self.len_std_injections, self.std_nbr,self.idx_std_to_use)
+                        self.final_value_file_df,self.calibration_param_list,self.calibration_vectors=cal.wrapper_calibration(self.corrected_file_df, self.iso_type_list, self.std_idx_norm, self.std_values, self.inj_per_std, self.result_file_df, self.removed_inj_per_std,self.std_nbr,self.protocol_type)
+                        self.slope_MC_list, self.p_values_MC_list, self.avg_std_list, self.std_dev_std_list, self.std_col1_list, self.residuals_std, self.std_uncheck, self.spl_results, self.known_sample_results=param_calc.wrapper_parameters_calculation(self.final_value_file_df, self.protocol_type, self.removed_inj_per_std, self.std_nbr, self.inj_per_std, self.iso_type_list, self.is_residuals_results_table, self.is_spy_results_table, self.var_checkbox_std_table_dict, self.std_values, self.removed_inj_per_spl, self.spl_nbr, self.inj_per_spl, self.len_std_injections, self.port_known_samples_list, self.idx_known_sample,self.std_idx_norm)
+                        self.list_plots = plots.create_list_plots(self.std_nbr, self.protocol_type,self.iso_type_list)
+                        self.fig, self.ax = plots.creation_all_plots(self.list_plots, self.corrected_file_df, self.iso_type_list, self.std_nbr, self.inj_per_std, self.option_name_std_table_dict, self.calibration_vectors, self.calibration_param_list)
+                        self.save_std_figure_batch()
+                        self.fig, self.ax = plots.make_raws_plots(self.protocol_type, self.result_file_df)
+                        self.save_raw_figure_batch()
+                        self.saving_place="local"
+                        sr.save_all_files(self)
+                    if self.option_protocol.get() == "van_Geldern_d17O_mode":
+                        self.protocol_type = 1
+                        self.MC_one = np.ones((self.inj_per_std))
+                        self.last_injections=MC_calc_VG.create_last_injections(self.result_file_df, self.iso_type_list)
+                        self.corrected_file_df,self.MCs=MC_calc_VG.wrapper_memory_coefficient_van_geldern_d17O(self.iso_type_list, self.MC_one, self.inj_per_std, self.last_injections, self.result_file_df, self.len_std_injections, self.std_nbr,self.idx_std_to_use)
+                        self.final_value_file_df,self.calibration_param_list,self.calibration_vectors=cal.wrapper_calibration(self.corrected_file_df, self.iso_type_list, self.std_idx_norm, self.std_values, self.inj_per_std, self.result_file_df, self.removed_inj_per_std,self.std_nbr,self.protocol_type)
+                        self.slope_MC_list, self.p_values_MC_list, self.avg_std_list, self.std_dev_std_list, self.std_col1_list, self.residuals_std, self.std_uncheck, self.spl_results, self.known_sample_results=param_calc.wrapper_parameters_calculation(self.final_value_file_df, self.protocol_type, self.removed_inj_per_std, self.std_nbr, self.inj_per_std, self.iso_type_list, self.is_residuals_results_table, self.is_spy_results_table, self.var_checkbox_std_table_dict, self.std_values, self.removed_inj_per_spl, self.spl_nbr, self.inj_per_spl, self.len_std_injections, self.port_known_samples_list, self.idx_known_sample,self.std_idx_norm)
+                        self.list_plots = plots.create_list_plots(self.std_nbr, self.protocol_type,self.iso_type_list)
+                        self.fig, self.ax = plots.creation_all_plots(self.list_plots, self.corrected_file_df, self.iso_type_list, self.std_nbr, self.inj_per_std, self.option_name_std_table_dict, self.calibration_vectors, self.calibration_param_list)
+                        self.save_std_figure_batch()
+                        self.fig, self.ax = plots.make_raws_plots(self.protocol_type, self.result_file_df)
+                        self.save_raw_figure_batch()
+                        self.saving_place="local"
+                        sr.save_all_files(self)
+                    if self.option_protocol.get() == "Gröning_mode":
+                        self.protocol_type=2
+                        self.corrected_file_df,self.single_factor_mean,self.exp_params=MC_calc_G.wrapper_memory_correction_groning_method(self.iso_type_list, self.result_file_df, self.len_std_injections, self.groning_params_array, self.inj_per_std)
+                        self.final_value_file_df,self.calibration_param_list,self.calibration_vectors=cal.wrapper_calibration(self.corrected_file_df, self.iso_type_list, self.std_idx_norm, self.std_values, self.inj_per_std, self.result_file_df, self.removed_inj_per_std,self.std_nbr,self.protocol_type)
+                        self.slope_MC_list, self.p_values_MC_list, self.avg_std_list, self.std_dev_std_list, self.std_col1_list, self.residuals_std, self.std_uncheck, self.spl_results, self.known_sample_results=param_calc.wrapper_parameters_calculation(self.final_value_file_df, self.protocol_type, self.removed_inj_per_std, self.std_nbr, self.inj_per_std, self.iso_type_list, self.is_residuals_results_table, self.is_spy_results_table, self.var_checkbox_std_table_dict, self.std_values, self.removed_inj_per_spl, self.spl_nbr, self.inj_per_spl, self.len_std_injections, self.port_known_samples_list, self.idx_known_sample,self.std_idx_norm)
+                        self.list_plots = plots.create_list_plots(self.std_nbr, self.protocol_type,self.iso_type_list)
+                        self.fig, self.ax = plots.creation_all_plots(self.list_plots, self.corrected_file_df, self.iso_type_list, self.std_nbr, self.inj_per_std, self.option_name_std_table_dict, self.calibration_vectors, self.calibration_param_list)
+                        self.save_std_figure_batch()
+                        self.fig, self.ax = plots.make_raws_plots(self.protocol_type, self.result_file_df)
+                        self.save_raw_figure_batch()
+                        self.saving_place="local"
+                        sr.save_all_files(self)
+                    if self.option_protocol.get() == "Gröning_d17O_mode":
+                        self.protocol_type=3
+                        self.corrected_file_df,self.single_factor_mean,self.exp_params=MC_calc_G.wrapper_memory_correction_groning_method_d17O(self.iso_type_list, self.result_file_df, self.len_std_injections, self.groning_params_array, self.inj_per_std)
+                        self.final_value_file_df,self.calibration_param_list,self.calibration_vectors=cal.wrapper_calibration(self.corrected_file_df, self.iso_type_list, self.std_idx_norm, self.std_values, self.inj_per_std, self.result_file_df, self.removed_inj_per_std,self.std_nbr,self.protocol_type)
+                        self.slope_MC_list, self.p_values_MC_list, self.avg_std_list, self.std_dev_std_list, self.std_col1_list, self.residuals_std, self.std_uncheck, self.spl_results, self.known_sample_results=param_calc.wrapper_parameters_calculation(self.final_value_file_df, self.protocol_type, self.removed_inj_per_std, self.std_nbr, self.inj_per_std, self.iso_type_list, self.is_residuals_results_table, self.is_spy_results_table, self.var_checkbox_std_table_dict, self.std_values, self.removed_inj_per_spl, self.spl_nbr, self.inj_per_spl, self.len_std_injections, self.port_known_samples_list, self.idx_known_sample,self.std_idx_norm)
+                        self.list_plots = plots.create_list_plots(self.std_nbr, self.protocol_type,self.iso_type_list)
+                        self.fig, self.ax = plots.creation_all_plots(self.list_plots, self.corrected_file_df, self.iso_type_list, self.std_nbr, self.inj_per_std, self.option_name_std_table_dict, self.calibration_vectors, self.calibration_param_list)
+                        self.save_std_figure_batch()
+                        self.fig, self.ax = plots.make_raws_plots(self.protocol_type, self.result_file_df)
+                        self.save_raw_figure_batch()
+                        self.saving_place="local"
+                        sr.save_all_files(self)
+                tk.messagebox.showinfo("Info", "Batch processing done without error", parent=self.master_window)
+            except Exception:
+                excep=traceback.format_exc()
+                tk.messagebox.showerror("Error","Something went wrong during batch processing, here is the error to help you debug ( you can also contact the developper at Baptiste.Bordet1@protonmail.com if you can't solve it \n"+excep,parent=self.master_window)
+        if self.config_dict["batch_processing_mode"]=="Manual": 
+            list_files=[]
+            for file in (Path(self.config_dict["directory_input_files"])).iterdir():
+                list_files.append(Path(file).stem)
+            self.list_files_rejected=[]
+            for i in range(0,len(list_files)):
+                self.continue_batch_process=tk.StringVar(value="False")
+                self.entry_3_1.delete(0,"end")
+                self.entry_3_1.insert(0,list_files[i])
+                self.processing()
+                self.master_window.wait_variable(self.continue_batch_process)
+            with open(Path(self.config_dict["directory_saving_files"]+"\\rejected_files.txt"),"w+") as f:
+                f.writelines(self.list_files_rejected)
+            tk.messagebox.showinfo("Info","Batch processing finished ! ")
+             
+    # saving raw figure  for batch processing 
+
+    def save_std_figure_batch(self):
+        figure=self.fig
+        if self.config_dict["saving_figures"]=="True":
+            if self.config_dict["directory_saving_figures"]!="":
+                directory_path=self.config_dict["directory_saving_figures"]
+            else:
+                directory_path=filedialog.askdirectory()
+            if self.config_dict["extension_figures"]!="":
+                extension_figure=self.config_dict["extension_figures"]
+            else: 
+                extension_figure=".png"
+            filename_raw=os.path.splitext(self.filename)[0]
+            figure.savefig(fname=Path(os.path.join(directory_path,filename_raw+"_std"+extension_figure)), dpi=100) 
+    
+    # saving raw figure for batch processing 
+
+    def save_raw_figure_batch(self):
+        figure=self.fig
+        figure.tight_layout()
+        if self.config_dict["saving_figures"]=="True":
+            if self.config_dict["directory_saving_figures"]!="":
+                directory_path=self.config_dict["directory_saving_figures"]
+            else:
+                directory_path=filedialog.askdirectory()
+            if self.config_dict["extension_figures"]!="":
+                extension_figure=self.config_dict["extension_figures"]
+            else: 
+                extension_figure=".png"
+            filename_raw=os.path.splitext(self.filename)[0]   
+            figure.savefig(fname=Path(os.path.join(directory_path,filename_raw+"_raw_plot"+extension_figure)), dpi=100) 
+                          
+                    
     # Function to process data. Opens the first page of results at the end of processing. 
     
     def processing(self):
         self.error_user_inputs=check_errors.check_errors(self)
         if self.error_user_inputs==1:
             return
-        self.init_variables_processing()
+        error=self.init_variables_processing()
+        if error==1:
+            return
         if self.option_protocol.get() == "van_Geldern_mode":
             self.protocol_type = 0
             outliers_top_lvl=outliers_top_level(self)
@@ -672,14 +810,15 @@ class Main_Window():
             self.change_page_result()
         if self.option_protocol.get() == "Gröning_d17O_mode":
             self.protocol_type=3
-            self.corrected_file_df,self.single_factor_mean,self.exp_params=MC_calc_G.wrapper_memory_correction_groning_method(self.iso_type_list, self.result_file_df, self.len_std_injections, self.groning_params_array, self.inj_per_std)
+            self.corrected_file_df,self.single_factor_mean,self.exp_params=MC_calc_G.wrapper_memory_correction_groning_method_d17O(self.iso_type_list, self.result_file_df, self.len_std_injections, self.groning_params_array, self.inj_per_std)
             self.final_value_file_df,self.calibration_param_list,self.calibration_vectors=cal.wrapper_calibration(self.corrected_file_df, self.iso_type_list, self.std_idx_norm, self.std_values, self.inj_per_std, self.result_file_df, self.removed_inj_per_std,self.std_nbr,self.protocol_type)
             self.slope_MC_list, self.p_values_MC_list, self.avg_std_list, self.std_dev_std_list, self.std_col1_list, self.residuals_std, self.std_uncheck, self.spl_results, self.known_sample_results=param_calc.wrapper_parameters_calculation(self.final_value_file_df, self.protocol_type, self.removed_inj_per_std, self.std_nbr, self.inj_per_std, self.iso_type_list, self.is_residuals_results_table, self.is_spy_results_table, self.var_checkbox_std_table_dict, self.std_values, self.removed_inj_per_spl, self.spl_nbr, self.inj_per_spl, self.len_std_injections, self.port_known_samples_list, self.idx_known_sample,self.std_idx_norm)
             self.change_page_result()
-             
+      
     # Function to set some variables for processing 
 
     def init_variables_processing(self):
+        error=0
         self.get_index_std_normalisation()
         self.filename = lf.downloading_file(self.option_protocol1, self.entry_3_1)
         self.iso_type_list=["d18O","dD"]
@@ -704,6 +843,7 @@ class Main_Window():
             if result==False:
                 error=1
                 return error
+        return error
     
     # Function that gather the index of standards used to normalise data
 
@@ -1070,6 +1210,9 @@ class page_result_1():
         self.optionmenu_plots.place(rely=0.1, relx=0.5, anchor="center")
         self.next_page_btn = tk.Button(self.page_results_1, text="Next page", font=("Helvetica Neue", 18), relief="raised", command=self.change_page_result_2)
         self.next_page_btn.place(relx=0.77, rely=0.1, anchor="center")
+        if self.main_window.config_dict["is_batch_processing"]=="True" and self.main_window.config_dict["batch_processing_mode"]=="Manual":
+            self.button_reject_file=tk.Button(self.page_results_1, text="Reject file", font=("Helvetica Neue", 18), relief="raised", command=self.reject_file)
+            self.button_reject_file.place(relx=0.87, rely=0.1, anchor="center")
     
     # saving raw figure 
 
@@ -1106,6 +1249,13 @@ class page_result_1():
             self.figure1,self.figure2 = plots.create_two_figures(self.list_plots, self.option_plots, self.main_window.corrected_file_df, self.main_window.iso_type_list, self.main_window.std_nbr, self.main_window.inj_per_std, self.main_window.option_name_std_table_dict, self.main_window.calibration_vectors, self.main_window.calibration_param_list)
             self.canvas1, self.canvas2 = plots.other_plots_canvas_creator(self.figure1, self.figure2, self.page_results_1)
     
+    # Function to reject file 
+    
+    def reject_file(self):
+        self.page_results_1.destroy()
+        self.main_window.list_files_rejected.append(self.main_window.filename+" \n")
+        self.main_window.continue_batch_process.set("True")
+        
     # Function to open the second page of results 
     
     def change_page_result_2(self):
@@ -1117,7 +1267,7 @@ class page_result_2():
         # import the main window class and all the variables contained in it 
         
         self.main_window=page_result_1.main_window
-        
+        self.page_result_1=page_result_1.page_results_1
         # Window definition 
         
         self.page_results_2 = tk.Toplevel(self.main_window.master_window)
@@ -1143,6 +1293,9 @@ class page_result_2():
         table_res2.create_samples_results_table(self.page_results_2, self.main_window.spl_results, self.main_window.protocol_type)
         self.saving_button = tk.Button(self.page_results_2, text="Save data", font=("Helvetica Neue", 18), relief="raised",command=self.saving_folder_window)
         self.saving_button.place(relx=0.74, rely=0.02)
+        if self.main_window.config_dict["is_batch_processing"]=="True" and self.main_window.config_dict["batch_processing_mode"]=="Manual":
+            self.button_reject_file=tk.Button(self.page_results_2, text="Reject file", font=("Helvetica Neue", 18), relief="raised", command=self.reject_file)
+            self.button_reject_file.place(relx=0.84, rely=0.02)
     
     # saving raw figure 
 
@@ -1173,6 +1326,14 @@ class page_result_2():
         if self.replaced_values==1:
             tk.messagebox.showwarning("Warning", "There is at least one sample which has not been corrected ! Check the Correction Flag in the final file and look for lines with 2 in this column", parent=self.page_results_2)    
     
+    # Function to reject file in manual batch processing
+    
+    def reject_file(self):
+        self.page_result_1.destroy()
+        self.page_results_2.destroy()
+        self.main_window.list_files_rejected.append(self.main_window.filename+"\n")
+        self.main_window.continue_batch_process.set("True")
+        
     # Function to save the data. Opens a messagebox to select where to save the data. 
     
     def saving_folder_window(self):
@@ -1204,7 +1365,12 @@ class page_result_2():
         self.where_to_save.grab_set()
         self.page_results_2.wait_window(self.where_to_save)
         sr.save_all_files(self)
-        
+        if self.main_window.config_dict["is_batch_processing"]=="True" and self.main_window.config_dict["batch_processing_mode"]=="Manual":
+            self.main_window.continue_batch_process.set("True")
+            self.page_results_2.destroy()
+            self.page_result_1.destroy()
+            
+            
     def set_local(self):
         self.saving_place="local"
         self.where_to_save.destroy()

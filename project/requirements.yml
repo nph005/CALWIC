@@ -1,12 +1,14 @@
 name : CALWIC_env
 channels:
   - defaults 
+  - conda-forge
 dependencies:
   - spyder
   - numpy 
   - pandas 
   - matplotlib 
   - scipy
+  - conda-forge::python-calamine
   - pip
   - pip: 
     - google-api-python-client

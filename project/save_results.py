@@ -383,38 +383,64 @@ def save_all_files(page_results_2_class):
 
     """
     # unpack variables needed for saving 
-    filename = page_results_2_class.main_window.filename
-    spl_results = page_results_2_class.main_window.spl_results
-    final_value_file_df = page_results_2_class.main_window.final_value_file_df
-    protocol_type =page_results_2_class.main_window.protocol_type
-    calibration_param_list = page_results_2_class.main_window.calibration_param_list
-    inj_per_std = page_results_2_class.main_window.inj_per_std
-    page_results_2=page_results_2_class.page_results_2
-    MCs = page_results_2_class.main_window.MCs
-    single_factor_mean = page_results_2_class.main_window.single_factor_mean
-    exp_params = page_results_2_class.main_window.exp_params
-    std_uncheck = page_results_2_class.main_window.std_uncheck
-    operator_id = page_results_2_class.main_window.operator_id
-    processor_id = page_results_2_class.main_window.processor_id
-    option_protocol = page_results_2_class.main_window.option_protocol
-    std_nbr = page_results_2_class.main_window.std_nbr
-    starting_index_std = page_results_2_class.main_window.removed_inj_per_std
-    residuals_std = page_results_2_class.main_window.residuals_std
-    std_values = page_results_2_class.main_window.std_values
-    instrument_identifier=page_results_2_class.main_window.option_instrument_identifier
-    if type(page_results_2_class.main_window.known_sample_results)==list:
-        known_sample_results= page_results_2_class.main_window.known_sample_results
-        known_values = page_results_2_class.main_window.known_values
-    saving_place = page_results_2_class.saving_place
+    try :
+        filename = page_results_2_class.main_window.filename
+        spl_results = page_results_2_class.main_window.spl_results
+        final_value_file_df = page_results_2_class.main_window.final_value_file_df
+        protocol_type =page_results_2_class.main_window.protocol_type
+        calibration_param_list = page_results_2_class.main_window.calibration_param_list
+        inj_per_std = page_results_2_class.main_window.inj_per_std
+        page_results_2=page_results_2_class.page_results_2
+        MCs = page_results_2_class.main_window.MCs
+        single_factor_mean = page_results_2_class.main_window.single_factor_mean
+        exp_params = page_results_2_class.main_window.exp_params
+        std_uncheck = page_results_2_class.main_window.std_uncheck
+        operator_id = page_results_2_class.main_window.operator_id
+        processor_id = page_results_2_class.main_window.processor_id
+        option_protocol = page_results_2_class.main_window.option_protocol
+        std_nbr = page_results_2_class.main_window.std_nbr
+        starting_index_std = page_results_2_class.main_window.removed_inj_per_std
+        residuals_std = page_results_2_class.main_window.residuals_std
+        std_values = page_results_2_class.main_window.std_values
+        instrument_identifier=page_results_2_class.main_window.option_instrument_identifier
+        if type(page_results_2_class.main_window.known_sample_results)==list:
+            known_sample_results= page_results_2_class.main_window.known_sample_results
+            known_values = page_results_2_class.main_window.known_values
+        saving_place = page_results_2_class.saving_place
+    except AttributeError: 
+        filename = page_results_2_class.filename
+        spl_results = page_results_2_class.spl_results
+        final_value_file_df = page_results_2_class.final_value_file_df
+        protocol_type =page_results_2_class.protocol_type
+        calibration_param_list = page_results_2_class.calibration_param_list
+        inj_per_std = page_results_2_class.inj_per_std
+        page_results_2=page_results_2_class.master_window
+        MCs = page_results_2_class.MCs
+        single_factor_mean = page_results_2_class.single_factor_mean
+        exp_params = page_results_2_class.exp_params
+        std_uncheck = page_results_2_class.std_uncheck
+        operator_id = page_results_2_class.operator_id
+        processor_id = page_results_2_class.processor_id
+        option_protocol = page_results_2_class.option_protocol
+        std_nbr = page_results_2_class.std_nbr
+        starting_index_std = page_results_2_class.removed_inj_per_std
+        residuals_std = page_results_2_class.residuals_std
+        std_values = page_results_2_class.std_values
+        instrument_identifier=page_results_2_class.option_instrument_identifier
+        if type(page_results_2_class.known_sample_results)==list:
+            known_sample_results= page_results_2_class.known_sample_results
+            known_values = page_results_2_class.known_values
+        saving_place = page_results_2_class.saving_place
     
     if saving_place=="local":
         default_path=""
         if config_dict["directory_saving_files"]!="":
-            default_path=config_dict["directory_saving_files"]
-        directory_path=filedialog.askdirectory(parent=page_results_2,initialdir=Path(default_path))
-        if directory_path=="":
-            return
-        directory_path=directory_path+"/"
+            directory_path=config_dict["directory_saving_files"]
+        else:
+            directory_path=filedialog.askdirectory(parent=page_results_2,initialdir=Path(default_path))
+            if directory_path=="":
+                return
+            directory_path=directory_path+"/"
         saved=1
     if saving_place=="drive":
         directory_path="./files/saving_temp/"
@@ -446,7 +472,6 @@ def save_all_files(page_results_2_class):
                 syringe_file_pd=pd.DataFrame(columns=["current_syringe","previous_syringe"],data=[[0,""]])
                 syringe_file_pd["current_syringe"].iloc[0]=syringe_file_pd["current_syringe"].iloc[0]+len(final_value_file_df)
                 syringe_file_pd.to_csv(Path(CALWIC_path+instrument_identifier.get()+"_syringe_counter.csv"),index=False,sep=separator_csv)
-        
         if type(known_sample_results)==list:
             save_control_spl_file(known_sample_results, known_values, filename,protocol_type,directory_path) 
         save_result_file(final_value_file_df, filename,directory_path)
