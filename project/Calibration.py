@@ -49,11 +49,11 @@ def create_normalisation_vector(iso_type,std_idx_norm,std_values,inj_per_std,res
 
     """
     true_vector=np.array([std_values[std_idx_norm[0],k]]*(inj_per_std-removed_inj_per_std))
-    measured_vector=np.array([result_file_df["MC_corr"+iso_type].iloc[std_idx_norm[0]*inj_per_std+removed_inj_per_std:std_idx_norm[0]*inj_per_std+inj_per_std]])
+    measured_vector=np.array([result_file_df.loc[std_idx_norm[0]*inj_per_std+removed_inj_per_std:std_idx_norm[0]*inj_per_std+inj_per_std-1,"MC_corr"+iso_type]]) # -1 is because of .loc method of pandas
     for i in range(1,len(std_idx_norm)):
         true_vector_temp=np.array([std_values[std_idx_norm[i],k]]*(inj_per_std-removed_inj_per_std))
         true_vector=np.concatenate((true_vector,true_vector_temp))
-        measured_vector_temp=np.array([result_file_df["MC_corr"+iso_type].iloc[std_idx_norm[i]*inj_per_std+removed_inj_per_std:std_idx_norm[i]*inj_per_std+inj_per_std]])
+        measured_vector_temp=np.array([result_file_df.loc[std_idx_norm[i]*inj_per_std+removed_inj_per_std:std_idx_norm[i]*inj_per_std+inj_per_std-1,"MC_corr"+iso_type]]) # -1 is because of .loc method of pandas
         measured_vector=np.append(measured_vector,measured_vector_temp)
     return true_vector, measured_vector
 
@@ -63,10 +63,10 @@ def create_normalisation_vector_groning(iso_type,std_idx_norm,std_values,inj_per
     measured_vector=np.array([])
     true_vector=np.array([])
     for i in std_idx_norm:
-        name_idf1_std=result_file_df["Identifier 1"].iloc[i*inj_per_std]
+        name_idf1_std=result_file_df.loc[i*inj_per_std,"Identifier 1"]
         for j in range(0,len(result_file_df)):
-            if name_idf1_std==result_file_df["Identifier 1"].iloc[j]:
-                measured_vector=np.append(measured_vector,result_file_df["MC_corr"+iso_type].iloc[j])
+            if name_idf1_std==result_file_df.loc[j,"Identifier 1"]:
+                measured_vector=np.append(measured_vector,result_file_df.loc[j,"MC_corr"+iso_type])
                 true_vector=np.append(true_vector,std_values[i,k])
     return true_vector, measured_vector
 
@@ -126,8 +126,8 @@ def final_value_calculation(corrected_file_df,iso_type,slope,intercept):
     final_value_file_df=corrected_file_df
     final_value_file_df["final_value_"+iso_type]=corrected_file_df["MC_corr"+iso_type]*slope+intercept
     for i in range(0,len(final_value_file_df)):
-        if final_value_file_df["MC_corr"+iso_type].iloc[i]==final_value_file_df["raw_value_"+iso_type].iloc[i]:
-            final_value_file_df["final_value_"+iso_type].iloc[i]=final_value_file_df["raw_value_"+iso_type].iloc[i]
+        if final_value_file_df.loc[i,"MC_corr"+iso_type]==final_value_file_df.loc[i,"raw_value_"+iso_type]:
+            final_value_file_df.loc[i,"final_value_"+iso_type]=final_value_file_df.loc[i,"raw_value_"+iso_type]
     return final_value_file_df   
 
 # Function to calculate the deuterieum excess on the calibrated values 
@@ -163,17 +163,17 @@ def flags(final_value_file_df,iso_type_list,inj_per_std,std_nbr):
     final_value_file_df["Hum Flag"]=""
     final_value_file_df["Hum Flag"]=0
     for i in range(0,len(final_value_file_df)):
-        if final_value_file_df["H2O_Mean"].iloc[i]>23000 or final_value_file_df["H2O_Mean"].iloc[i]<17000:
-            final_value_file_df["Hum Flag"].iloc[i]=1
+        if final_value_file_df.loc[i,"H2O_Mean"]>23000 or final_value_file_df.loc[i,"H2O_Mean"]<17000:
+            final_value_file_df.loc[i,"Hum Flag"]=1
     final_value_file_df["Correction Flag"]=1
     for iso_type in iso_type_list:
         for i in range(0,len(final_value_file_df)):
-            if pd.isna(final_value_file_df["final_value_"+iso_type].iloc[i])==True:
-                final_value_file_df["Correction Flag"].iloc[i]=0 
-        final_value_file_df["Correction Flag"].iloc[0:inj_per_std]=0
+            if pd.isna(final_value_file_df.loc[i,"final_value_"+iso_type])==True:
+                final_value_file_df.loc[i,"Correction Flag"]=0 
+        final_value_file_df.loc[0:inj_per_std,"Correction Flag"]=0
         for i in range(std_nbr*inj_per_std,len(final_value_file_df)):
-            if final_value_file_df["MC_corr"+iso_type].iloc[i]==final_value_file_df["raw_value_"+iso_type].iloc[i]:
-                final_value_file_df["Correction Flag"].iloc[i]=2
+            if final_value_file_df.loc[i,"MC_corr"+iso_type]==final_value_file_df.loc[i,"raw_value_"+iso_type]:
+                final_value_file_df.loc[i,"Correction Flag"]=2
     return final_value_file_df
 
 # Function to save calibration curve parameters 

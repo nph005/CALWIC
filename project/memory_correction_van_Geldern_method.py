@@ -46,8 +46,8 @@ def create_last_injections(result_file_df,iso_type_list):
     last_injections=[[],[],[]]
     for i,iso_type in enumerate(iso_type_list):
         for j in range(0,len(result_file_df)-1):
-            if result_file_df["Inj Nr"].iloc[j]>result_file_df["Inj Nr"].iloc[j+1]:
-                last_injections[i].append(result_file_df["raw_value_"+iso_type].iloc[j])
+            if result_file_df.loc[j,"Inj Nr"]>result_file_df.loc[j+1,"Inj Nr"]:
+                last_injections[i].append(result_file_df.loc[j,"raw_value_"+iso_type])
     return last_injections
 
 
@@ -217,11 +217,11 @@ def delta_calc_MC(MC,last_injections,result_file_df,inj_per_std,iso_type,iso_num
     result_file_df["MC_corr"+iso_type]=result_file_df["raw_value_"+iso_type]
     j=-1
     for i in range(inj_per_std,len(result_file_df)):
-        if result_file_df["Inj Nr"].iloc[i]<result_file_df["Inj Nr"].iloc[i-1]:
+        if result_file_df.loc[i,"Inj Nr"]<result_file_df.loc[i-1,"Inj Nr"]:
             j=j+1
-        inj_nbr=result_file_df["Inj Nr"].iloc[i]-1
+        inj_nbr=result_file_df.loc[i,"Inj Nr"]-1
         if pd.isna(last_injections[iso_number][j])!=True:
-            result_file_df["MC_corr"+iso_type].iloc[i]=result_file_df["raw_value_"+iso_type].iloc[i]+(1-MC[inj_nbr])*(result_file_df["raw_value_"+iso_type].iloc[i]-last_injections[iso_number][j])           
+            result_file_df.loc[i,"MC_corr"+iso_type]=result_file_df.loc[i,"raw_value_"+iso_type]+(1-MC[inj_nbr])*(result_file_df.loc[i,"raw_value_"+iso_type]-last_injections[iso_number][j])           
     return result_file_df
 
 ####################### wrapper for Van Geldern method #######################
