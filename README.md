@@ -66,10 +66,10 @@ Contributions to the code are encouraged especially adding new method for memory
 You can do it either by opening an issue to notify problems in the code (https://docs.github.com/en/issues/tracking-your-work-with-issues/creating-an-issue) or a pull request if you want to fix or add features (https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) 
 
 ## Citation 
-If you use this programm in your worl, please use the following BibTeX entry.
+If you use this programm in your work, please use the following BibTeX entry.
 ```
 @misc{ALWIC_tool_2023,
-  author =       {Baptiste Bordet, Hans-Christian Steen Larsen, Daniele Zannoni, Arny Sveinbjörnsdottir},
+  author =       {Baptiste Bordet, Hans-Christian Steen Larsen, Daniele Zannoni, Melanie Behrens, Arny Sveinbjörnsdottir},
   title =        {{Automatic liquid water isotope calibration tool (CALWIC)}},
   howpublished = {\url{https://github.com/baptistebordet1/CALWIC}},
   year =         {2023}
