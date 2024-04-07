@@ -36,12 +36,18 @@ def load_standard_csv_file():
     std_values_file : pandas.DataFrame
         Values of standards contained in the file 
     std_short_names_list : list
-        List of the names of standards 
+        List of the names of standards
+    error : int 
+        Indicates if there is a duplicate in std values 
 
     """
     std_values_file=pd.read_csv(Path("./files/std_values.csv"),sep=None,engine="python")
     std_short_names_list=std_values_file[std_values_file.columns[1]].tolist()
-    return std_values_file,std_short_names_list
+    std_short_names_list_set=set(std_short_names_list)
+    error=0
+    if len(std_short_names_list)!=len(std_short_names_list_set):
+        error=1
+    return std_values_file,std_short_names_list,error
 
 # Function to load groning parameters csv file 
 

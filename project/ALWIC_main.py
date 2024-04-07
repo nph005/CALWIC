@@ -53,7 +53,7 @@ class Main_Window():
         ##################DEFINITION OF MAIN WINDOW'S WIDGETS##################
         # Instances variables 
         
-        self.std_values_file, self.std_short_names_list = lf.load_standard_csv_file()
+        self.std_values_file, self.std_short_names_list, self.error_std_file = lf.load_standard_csv_file()
         self.groning_params_file,self.instruments_names_list=lf.load_groning_params_file()
         self.instruments_identifier_list = lf.load_instrument_identifier_file()
         
@@ -226,7 +226,10 @@ class Main_Window():
         
         self.config_dict=init_CALWIC.read_config_file()
         self.set_up_default_settings()
-        
+        if self.error_std_file==1:
+            answer=tk.messagebox.askokcancel("Warning", "In the standard value file there are two standards \n with the same name this will cause a bug in the prefilling \n Click cancel to quit and ok to continue !",parent=self.master_window)
+            if answer==False:
+                self.master_window.destroy()
         self.master_window.mainloop()
         
 ##################END OF DEFINITION OF MAIN WINDOW'S WIDGETS###################
@@ -524,7 +527,10 @@ class Main_Window():
                 self.entry.config(state="disabled")
                 self.entry_std_table_dict["entry_10_"+str(3*(i+1))] = self.entry # note that str(3*(i+1) is equivalent to str(3*i+3))
             if i !=0:
-                self.var = tk.IntVar(value=1)
+                if i==1 or i==2:
+                    self.var = tk.IntVar(value=1)
+                else:
+                    self.var = tk.IntVar(value=0)
                 self.var_checkbox_std_table_dict["var_10_"+str(i)] = self.var
                 self.checkbox = tk.Checkbutton( self.pw10, variable=self.var_checkbox_std_table_dict["var_10_"+str(i)], bg="#056CF2", activebackground="#056CF2")
                 self.checkbox.grid(row=i+2, column=2)

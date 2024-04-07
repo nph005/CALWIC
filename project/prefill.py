@@ -90,7 +90,7 @@ def counter(id1_df,id2_df,inj_nbr_df,port_df):
         Name of the standards (if it matches with a name from the std_values.csv)
 
     """
-    std_values_file,std_short_names_list=lf.load_standard_csv_file()
+    std_values_file,std_short_names_list,error_std_file=lf.load_standard_csv_file()
     std_where=np.where(id2_df.str.contains("STD"))
     inj_std_part=inj_nbr_df.iloc[std_where]
     std_name_part=id1_df.iloc[std_where]
@@ -117,9 +117,6 @@ def counter(id1_df,id2_df,inj_nbr_df,port_df):
             for i in range(len(inj_spl_part),0,-1):
                 if inj_spl_part.iloc[-1]==inj_spl_part.iloc[i-1]:
                     spl_nbr=spl_nbr+1
-                    
-
-                    
             error=0
             try:
                 is_spy=True
