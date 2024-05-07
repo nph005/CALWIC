@@ -242,10 +242,11 @@ class Main_Window():
         
         # check if the first standard is use for calibration if yes quit 
         
-        if 1 in tuple(map(int, self.config_dict["default_std_calibration"].split(','))):
-            tk.messagebox.showerror("Error","The first standard is used as a default \n standard in the the calibration file. \n CALWIC will quit so you can modify it ! ")
-            self.master_window.destroy()
-            return
+        if self.config_dict["default_std_calibration"]!="":
+            if 1 in tuple(map(int, self.config_dict["default_std_calibration"].split(','))):
+                tk.messagebox.showerror("Error","The first standard is used as a default \n standard in the the calibration file. \n CALWIC will quit so you can modify it ! ")
+                self.master_window.destroy()
+                return
         #sample
         self.entry_6_1.insert(0,self.config_dict["sample_number"])
         self.entry_6_2.insert(0,self.config_dict["injection_per_sample"])
@@ -409,6 +410,7 @@ class Main_Window():
         directory_file = filepath_splitted[0]
         filename_long = filepath_splitted[1].rpartition(".")
         filename = filename_long[0]
+        extension_input_files=".csv"
         if self.config_dict["extension_input_files"]!="":
             extension_input_files=self.config_dict["extension_input_files"]
         dest = Path(os.path.join("./files/raw_files_temp/",filename+extension_input_files))
@@ -533,10 +535,11 @@ class Main_Window():
                 self.entry.config(state="disabled")
                 self.entry_std_table_dict["entry_10_"+str(3*(i+1))] = self.entry # note that str(3*(i+1) is equivalent to str(3*i+3))
             if i !=0:
-                if i+1 in tuple(map(int, self.config_dict["default_std_calibration"].split(','))):
-                    self.var = tk.IntVar(value=1)
-                else:
-                    self.var = tk.IntVar(value=0)
+                if self.config_dict["default_std_calibration"]!="":
+                    if i+1 in tuple(map(int, self.config_dict["default_std_calibration"].split(','))):
+                        self.var = tk.IntVar(value=1)
+                    else:
+                        self.var = tk.IntVar(value=0)
                 self.var_checkbox_std_table_dict["var_10_"+str(i)] = self.var
                 self.checkbox = tk.Checkbutton( self.pw10, variable=self.var_checkbox_std_table_dict["var_10_"+str(i)], bg="#056CF2", activebackground="#056CF2")
                 self.checkbox.grid(row=i+2, column=2)
